@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Weekly Report</title>
+
+  <!-- jsPDF and html2canvas (CDN versions) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    /* ========== GLOBAL RESET & BODY ========== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      color: #333;
+      margin: 20px;
+      line-height: 1.4;
+      background-color: #fefefe;
+    }
+    /* ========== BUTTONS ========== */
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      padding: 8px 14px;
+      transition: background-color 0.2s ease;
+      margin: 4px 4px 12px 0;
+    }
+    .btn-primary { background-color: #007bff; color: #fff; }
+    .btn-primary:hover { background-color: #0056b3; }
+    .btn-secondary { background-color: #6c757d; color: #fff; }
+    .btn-secondary:hover { background-color: #495057; }
+    .btn-success { background-color: #28a745; color: #fff; }
+    .btn-success:hover { background-color: #218838; }
+    /* ========== HEADINGS ========== */
+    h1 { margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1.4rem; }
+    h2 { margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; }
+    h3 { margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1.1rem; }
+    /* ========== PDF CONTAINER ========== */
+    #pdfContainer {
+      background-color: #ffffff;
+      padding: 0 10px 10px 10px; 
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    /* ========== REPORT SUMMARY ========== */
+    #reportSummary {
+      background-color: #f9f9f9;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.04);
+    }
+    #reportSummary p { margin-bottom: 0.5rem; }
+    /* ========== TABLES ========== */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+    }
+    table thead th {
+      background-color: #f2f2f2;
+      padding: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    tr:hover td { background-color: #f8f8f8; }
+    /* ========== OBSERVATIONS SECTION ========== */
+    .observations-section { margin-bottom: 2rem; }
+    .observations-section textarea { height: 60px; }
+    /* ========== FORMS, INPUTS, MODALS ========== */
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-weight: bold; margin-bottom: 4px; }
+    input[type="text"],
+    input[type="date"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 6px;
+      margin-bottom: 4px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    .submit-btn { margin-top: 6px; font-size: 0.9rem; border-radius: 4px; padding: 8px 14px; }
+    .modal {
+      display: none; 
+      position: fixed; 
+      z-index: 999; 
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      overflow: auto; 
+      background-color: rgba(0,0,0,0.4);
+      justify-content: center; align-items: center;
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: auto;
+      padding: 20px;
+      border-radius: 6px;
+      width: 400px;
+      position: relative;
+      animation: fadeIn 0.3s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: -5px;
+    }
+    .close:hover { color: #000; }
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 600px) {
+      body { margin: 10px; }
+      .modal-content { width: 90% !important; }
+      table, th, td { font-size: 0.8rem; }
+      h2 { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== TOP-LEVEL UI ELEMENTS (NOT IN PDF) ========== -->
+  <button class="btn-primary" onclick="downloadPDF()">Download PDF</button>
+  <button class="btn-secondary" onclick="clearAllData()">Clear All Entries</button>
+
+  <!-- Date Range Form -->
+  <form id="dateRangeForm" onsubmit="updateDateRange(event)">
+    <label for="startDate"><strong>Start Date:</strong></label>
+    <input type="date" id="startDate" required>
+    <label for="endDate"><strong>End Date:</strong></label>
+    <input type="date" id="endDate" required>
+    <button class="btn-secondary" type="submit">Set Date Range</button>
+  </form>
+
+  <!-- “Add” Buttons for data entry -->
+  <div style="margin-bottom: 1rem;">
+    <button class="btn-primary" onclick="showCompletedForm()">Add Completed Inspection</button>
+    <button class="btn-primary" onclick="showOngoingForm()">Add Ongoing Inspection</button>
+    <button class="btn-primary" onclick="showDeficiencyForm()">Add Deficiency / Follow-up</button>
+  </div>
+
+  <!-- ========== PDF CONTAINER (INCLUDES ONLY REPORTING ELEMENTS) ========== -->
+  <div id="pdfContainer">
+    <!-- Report Summary Section -->
+    <div id="reportSummary">
+      <h2>Report Summary</h2>
+      <p><strong>Date Range Covered:</strong> 
+         <span id="dateRangeDisplay">[mm/dd/yyyy - mm/dd/yyyy]</span></p>
+      <p><strong>Total Inspections Completed:</strong> 
+         <span id="totalCompletedCount">0</span></p>
+      <p><strong>Total Hours (Bid vs. Worked):</strong> 
+         <span id="totalBidHours">0</span> / <span id="totalHoursWorked">0</span></p>
+      <p><strong>Number of Sites with Deficiencies:</strong> 
+         <span id="defSiteCount">0</span></p>
+      <p><strong>Open Follow-up Actions:</strong> 
+         <span id="openFollowupCount">0</span></p>
+    </div>
+
+    <h1>Weekly Report</h1>
+
+    <!-- Completed Inspections Section -->
+    <section>
+      <h2>Completed Inspections</h2>
+      <table id="completedTable">
+        <thead>
+          <tr>
+            <th>Project Number</th>
+            <th>Site Name</th>
+            <th>Date Completed</th>
+            <th>Bid Hours</th>
+            <th>Actual Hours</th>
+            <th>Over/Under %</th>
+            <th>Deficiencies Found (#)</th>
+            <th>Notes</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- Ongoing / In-Progress Inspections Section -->
+    <section>
+      <h2>Ongoing / In-Progress Inspections</h2>
+      <table id="ongoingTable">
+        <thead>
+          <tr>
+            <th>Project Number</th>
+            <th>Site Name</th>
+            <th>Start Date</th>
+            <th>Bid Hours</th>
+            <th>Hours Worked So Far</th>
+            <th>Over/Under %</th>
+            <th>Estimated Completion Date</th>
+            <th>Notes</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- Deficiency Breakdown / Follow-ups -->
+    <section>
+      <h2>Deficiency Breakdown / Follow-ups</h2>
+      <table id="deficiencyTable">
+        <thead>
+          <tr>
+            <th>Site Name</th>
+            <th>Deficiencies Found Critical? (Y/N)</th>
+            <th>Next Steps</th>
+            <th>Follow Up Date</th>
+            <th>Assigned To</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- Key Observations & Recommendations -->
+    <section class="observations-section">
+      <h2>Key Observations & Recommendations</h2>
+      <div class="form-group">
+        <label for="trendsNoticed">Trends Noticed:</label>
+        <textarea id="trendsNoticed"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="resourceChallenges">Resource Challenges:</label>
+        <textarea id="resourceChallenges"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="suggestedImprovements">Suggested Process Improvements:</label>
+        <textarea id="suggestedImprovements"></textarea>
+      </div>
+    </section>
+  </div>
+  <!-- /#pdfContainer -->
+
+  <!-- ========== ADD MODALS ========== -->
+  <!-- Completed Inspection Modal -->
+  <div id="completedModal" class="modal" onclick="outsideClickClose(event, 'completedModal')">
+    <div class="modal-content">
+      <span class="close" onclick="closeCompletedForm()">&times;</span>
+      <h3>Add Completed Inspection</h3>
+      <form onsubmit="addCompleted(event)">
+        <div class="form-group">
+          <label for="completedProjectNumber">Project Number</label>
+          <input type="text" id="completedProjectNumber" required autofocus/>
+        </div>
+        <div class="form-group">
+          <label for="completedSiteName">Site Name</label>
+          <input type="text" id="completedSiteName" required />
+        </div>
+        <div class="form-group">
+          <label for="completedDate">Date Completed</label>
+          <input type="date" id="completedDate" required />
+        </div>
+        <div class="form-group">
+          <label for="completedBidHours">Bid Hours</label>
+          <input type="text" id="completedBidHours" required />
+        </div>
+        <div class="form-group">
+          <label for="completedActualHours">Actual Hours</label>
+          <input type="text" id="completedActualHours" required />
+        </div>
+        <div class="form-group">
+          <label for="completedDeficienciesFound">Deficiencies Found (#)</label>
+          <input type="text" id="completedDeficienciesFound" required />
+        </div>
+        <div class="form-group">
+          <label for="completedNotes">Notes</label>
+          <textarea id="completedNotes"></textarea>
+        </div>
+        <button type="submit" class="submit-btn btn-success">Add</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Ongoing Inspection Modal -->
+  <div id="ongoingModal" class="modal" onclick="outsideClickClose(event, 'ongoingModal')">
+    <div class="modal-content">
+      <span class="close" onclick="closeOngoingForm()">&times;</span>
+      <h3>Add Ongoing Inspection</h3>
+      <form onsubmit="addOngoing(event)">
+        <div class="form-group">
+          <label for="ongoingProjectNumber">Project Number</label>
+          <input type="text" id="ongoingProjectNumber" required autofocus/>
+        </div>
+        <div class="form-group">
+          <label for="ongoingSiteName">Site Name</label>
+          <input type="text" id="ongoingSiteName" required />
+        </div>
+        <div class="form-group">
+          <label for="ongoingStartDate">Start Date</label>
+          <input type="date" id="ongoingStartDate" required />
+        </div>
+        <div class="form-group">
+          <label for="ongoingBidHours">Bid Hours</label>
+          <input type="text" id="ongoingBidHours" required />
+        </div>
+        <div class="form-group">
+          <label for="ongoingHoursWorked">Hours Worked So Far</label>
+          <input type="text" id="ongoingHoursWorked" required />
+        </div>
+        <div class="form-group">
+          <label for="ongoingEstCompletion">Estimated Completion Date</label>
+          <input type="date" id="ongoingEstCompletion" required />
+        </div>
+        <div class="form-group">
+          <label for="ongoingNotes">Notes</label>
+          <textarea id="ongoingNotes"></textarea>
+        </div>
+        <button type="submit" class="submit-btn btn-success">Add</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Deficiency / Follow-up Modal -->
+  <div id="deficiencyModal" class="modal" onclick="outsideClickClose(event, 'deficiencyModal')">
+    <div class="modal-content">
+      <span class="close" onclick="closeDeficiencyForm()">&times;</span>
+      <h3>Add Deficiency / Follow-up</h3>
+      <form onsubmit="addDeficiency(event)">
+        <div class="form-group">
+          <label for="defSiteName">Site Name</label>
+          <input type="text" id="defSiteName" required autofocus/>
+        </div>
+        <div class="form-group">
+          <label for="defIsCritical">Deficiencies Found Critical? (Y/N)</label>
+          <select id="defIsCritical">
+            <option value="Y">Y</option>
+            <option value="N">N</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="defNextSteps">Next Steps</label>
+          <textarea id="defNextSteps"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="defFollowUpDate">Follow Up Date</label>
+          <input type="date" id="defFollowUpDate" />
+        </div>
+        <div class="form-group">
+          <label for="defAssignedTo">Assigned To</label>
+          <input type="text" id="defAssignedTo" />
+        </div>
+        <button type="submit" class="submit-btn btn-success">Add</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========== EDIT MODALS ========== -->
+  <!-- Edit Completed Inspection Modal -->
+  <div id="editCompletedModal" class="modal" onclick="outsideClickClose(event, 'editCompletedModal')">
+    <div class="modal-content">
+      <span class="close" onclick="closeEditCompletedForm()">&times;</span>
+      <h3>Edit Completed Inspection</h3>
+      <form onsubmit="editCompleted(event)">
+        <div class="form-group">
+          <label for="editCompletedProjectNumber">Project Number</label>
+          <input type="text" id="editCompletedProjectNumber" required />
+        </div>
+        <div class="form-group">
+          <label for="editCompletedSiteName">Site Name</label>
+          <input type="text" id="editCompletedSiteName" required />
+        </div>
+        <div class="form-group">
+          <label for="editCompletedDate">Date Completed</label>
+          <input type="date" id="editCompletedDate" required />
+        </div>
+        <div class="form-group">
+          <label for="editCompletedBidHours">Bid Hours</label>
+          <input type="text" id="editCompletedBidHours" required />
+        </div>
+        <div class="form-group">
+          <label for="editCompletedActualHours">Actual Hours</label>
+          <input type="text" id="editCompletedActualHours" required />
+        </div>
+        <div class="form-group">
+          <label for="editCompletedDeficienciesFound">Deficiencies Found (#)</label>
+          <input type="text" id="editCompletedDeficienciesFound" required />
+        </div>
+        <div class="form-group">
+          <label for="editCompletedNotes">Notes</label>
+          <textarea id="editCompletedNotes"></textarea>
+        </div>
+        <button type="submit" class="submit-btn btn-success">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Ongoing Inspection Modal -->
+  <div id="editOngoingModal" class="modal" onclick="outsideClickClose(event, 'editOngoingModal')">
+    <div class="modal-content">
+      <span class="close" onclick="closeEditOngoingForm()">&times;</span>
+      <h3>Edit Ongoing Inspection</h3>
+      <form onsubmit="editOngoing(event)">
+        <div class="form-group">
+          <label for="editOngoingProjectNumber">Project Number</label>
+          <input type="text" id="editOngoingProjectNumber" required />
+        </div>
+        <div class="form-group">
+          <label for="editOngoingSiteName">Site Name</label>
+          <input type="text" id="editOngoingSiteName" required />
+        </div>
+        <div class="form-group">
+          <label for="editOngoingStartDate">Start Date</label>
+          <input type="date" id="editOngoingStartDate" required />
+        </div>
+        <div class="form-group">
+          <label for="editOngoingBidHours">Bid Hours</label>
+          <input type="text" id="editOngoingBidHours" required />
+        </div>
+        <div class="form-group">
+          <label for="editOngoingHoursWorked">Hours Worked So Far</label>
+          <input type="text" id="editOngoingHoursWorked" required />
+        </div>
+        <div class="form-group">
+          <label for="editOngoingEstCompletion">Estimated Completion Date</label>
+          <input type="date" id="editOngoingEstCompletion" required />
+        </div>
+        <div class="form-group">
+          <label for="editOngoingNotes">Notes</label>
+          <textarea id="editOngoingNotes"></textarea>
+        </div>
+        <button type="submit" class="submit-btn btn-success">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Deficiency / Follow-up Modal -->
+  <div id="editDeficiencyModal" class="modal" onclick="outsideClickClose(event, 'editDeficiencyModal')">
+    <div class="modal-content">
+      <span class="close" onclick="closeEditDeficiencyForm()">&times;</span>
+      <h3>Edit Deficiency / Follow-up</h3>
+      <form onsubmit="editDeficiency(event)">
+        <div class="form-group">
+          <label for="editDefSiteName">Site Name</label>
+          <input type="text" id="editDefSiteName" required />
+        </div>
+        <div class="form-group">
+          <label for="editDefIsCritical">Deficiencies Found Critical? (Y/N)</label>
+          <select id="editDefIsCritical">
+            <option value="Y">Y</option>
+            <option value="N">N</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="editDefNextSteps">Next Steps</label>
+          <textarea id="editDefNextSteps"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="editDefFollowUpDate">Follow Up Date</label>
+          <input type="date" id="editDefFollowUpDate" />
+        </div>
+        <div class="form-group">
+          <label for="editDefAssignedTo">Assigned To</label>
+          <input type="text" id="editDefAssignedTo" />
+        </div>
+        <button type="submit" class="submit-btn btn-success">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ======================
+    // Helper: Format Date to mm/dd/yyyy
+    // ======================
+    function formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      const month = ('0' + (date.getMonth() + 1)).slice(-2);
+      const day = ('0' + date.getDate()).slice(-2);
+      const year = date.getFullYear();
+      return `${month}/${day}/${year}`;
+    }
+
+    // ======================
+    // UPDATE DATE RANGE (using formatted dates)
+    // ======================
+    function updateDateRange(event) {
+      event.preventDefault();
+      const start = document.getElementById('startDate').value;
+      const end = document.getElementById('endDate').value;
+      if (!start || !end) return;
+      const startFmt = formatDate(start);
+      const endFmt = formatDate(end);
+      document.getElementById('dateRangeDisplay').innerText = `${startFmt} - ${endFmt}`;
+    }
+
+    // ======================
+    // MODALS: Show, close, and set focus
+    // ======================
+    function showCompletedForm() {
+      document.getElementById('completedModal').style.display = 'flex';
+      setTimeout(() => document.getElementById('completedProjectNumber').focus(), 100);
+    }
+    function closeCompletedForm() {
+      document.getElementById('completedModal').style.display = 'none';
+    }
+    function showOngoingForm() {
+      document.getElementById('ongoingModal').style.display = 'flex';
+      setTimeout(() => document.getElementById('ongoingProjectNumber').focus(), 100);
+    }
+    function closeOngoingForm() {
+      document.getElementById('ongoingModal').style.display = 'none';
+    }
+    function showDeficiencyForm() {
+      document.getElementById('deficiencyModal').style.display = 'flex';
+      setTimeout(() => document.getElementById('defSiteName').focus(), 100);
+    }
+    function closeDeficiencyForm() {
+      document.getElementById('deficiencyModal').style.display = 'none';
+    }
+    function outsideClickClose(event, modalId) {
+      if (event.target.id === modalId) {
+        document.getElementById(modalId).style.display = 'none';
+      }
+    }
+
+    // ======================
+    // CALCULATE Over/Under %
+    // (bid - actual) / bid => positive => Under, negative => Over
+    // ======================
+    function calculateOverUnder(bid, actual) {
+      const bidH = parseFloat(bid);
+      const actualH = parseFloat(actual);
+      if (isNaN(bidH) || isNaN(actualH) || bidH === 0) {
+        return 'N/A';
+      }
+      const diff = ((bidH - actualH) / bidH) * 100;
+      const sign = diff > 0 ? '+' : '';
+      return sign + diff.toFixed(2) + '%';
+    }
+
+    // ======================
+    // UPDATE SUMMARY STATS
+    // ======================
+    function updateStats() {
+      // Completed
+      const completedRows = document.querySelectorAll('#completedTable tbody tr');
+      document.getElementById('totalCompletedCount').innerText = completedRows.length;
+      let sumBidCompleted = 0, sumActualCompleted = 0;
+      completedRows.forEach(row => {
+        const bidHours = parseFloat(row.cells[3].innerText) || 0;
+        const actualHours = parseFloat(row.cells[4].innerText) || 0;
+        sumBidCompleted += bidHours;
+        sumActualCompleted += actualHours;
+      });
+      // Ongoing
+      const ongoingRows = document.querySelectorAll('#ongoingTable tbody tr');
+      let sumBidOngoing = 0, sumWorkedOngoing = 0;
+      ongoingRows.forEach(row => {
+        const bidHours = parseFloat(row.cells[3].innerText) || 0;
+        const workedHours = parseFloat(row.cells[4].innerText) || 0;
+        sumBidOngoing += bidHours;
+        sumWorkedOngoing += workedHours;
+      });
+      const totalBid = sumBidCompleted + sumBidOngoing;
+      const totalWorked = sumActualCompleted + sumWorkedOngoing;
+      document.getElementById('totalBidHours').innerText = totalBid.toFixed(2);
+      document.getElementById('totalHoursWorked').innerText = totalWorked.toFixed(2);
+      // Deficiencies
+      const deficiencyRows = document.querySelectorAll('#deficiencyTable tbody tr');
+      document.getElementById('defSiteCount').innerText = deficiencyRows.length;
+      document.getElementById('openFollowupCount').innerText = deficiencyRows.length;
+    }
+
+    // ======================
+    // DELETE Row (used by all tables)
+    // ======================
+    function deleteRow(btn) {
+      const row = btn.parentNode.parentNode;
+      row.parentNode.removeChild(row);
+      updateStats();
+    }
+
+    // ======================
+    // ADD Completed Inspection
+    // ======================
+    function addCompleted(event) {
+      event.preventDefault();
+      const projectNumber = document.getElementById('completedProjectNumber').value.trim();
+      const siteName = document.getElementById('completedSiteName').value.trim();
+      const dateCompleted = document.getElementById('completedDate').value;
+      const bidHours = document.getElementById('completedBidHours').value.trim();
+      const actualHours = document.getElementById('completedActualHours').value.trim();
+      const deficienciesFound = document.getElementById('completedDeficienciesFound').value.trim();
+      const notes = document.getElementById('completedNotes').value.trim();
+      const overUnder = calculateOverUnder(bidHours, actualHours);
+      const tableBody = document.querySelector('#completedTable tbody');
+      const newRow = tableBody.insertRow();
+      newRow.insertCell().innerText = projectNumber;
+      newRow.insertCell().innerText = siteName;
+      let dateCell = newRow.insertCell();
+      dateCell.innerText = formatDate(dateCompleted);
+      dateCell.setAttribute('data-raw', dateCompleted);
+      newRow.insertCell().innerText = bidHours;
+      newRow.insertCell().innerText = actualHours;
+      let ouCell = newRow.insertCell();
+      ouCell.innerText = overUnder;
+      const numericOverUnder = parseFloat(overUnder);
+      if (!isNaN(numericOverUnder)) {
+        ouCell.style.color = numericOverUnder > 0 ? 'green' : (numericOverUnder < 0 ? 'red' : '');
+      }
+      newRow.insertCell().innerText = deficienciesFound;
+      newRow.insertCell().innerText = notes;
+      const actionCell = newRow.insertCell();
+      actionCell.innerHTML = '<button class="btn-secondary no-pdf" onclick="openEditCompleted(this)">Edit</button> <button class="btn-secondary no-pdf" onclick="deleteRow(this)">Delete</button>';
+      // Clear inputs
+      document.getElementById('completedProjectNumber').value = '';
+      document.getElementById('completedSiteName').value = '';
+      document.getElementById('completedDate').value = '';
+      document.getElementById('completedBidHours').value = '';
+      document.getElementById('completedActualHours').value = '';
+      document.getElementById('completedDeficienciesFound').value = '';
+      document.getElementById('completedNotes').value = '';
+      closeCompletedForm();
+      updateStats();
+    }
+
+    // ======================
+    // ADD Ongoing Inspection
+    // ======================
+    function addOngoing(event) {
+      event.preventDefault();
+      const projectNumber = document.getElementById('ongoingProjectNumber').value.trim();
+      const siteName = document.getElementById('ongoingSiteName').value.trim();
+      const startDate = document.getElementById('ongoingStartDate').value;
+      const bidHours = document.getElementById('ongoingBidHours').value.trim();
+      const hoursWorked = document.getElementById('ongoingHoursWorked').value.trim();
+      const estCompletion = document.getElementById('ongoingEstCompletion').value;
+      const notes = document.getElementById('ongoingNotes').value.trim();
+      const overUnder = calculateOverUnder(bidHours, hoursWorked);
+      const tableBody = document.querySelector('#ongoingTable tbody');
+      const newRow = tableBody.insertRow();
+      newRow.insertCell().innerText = projectNumber;
+      newRow.insertCell().innerText = siteName;
+      let startDateCell = newRow.insertCell();
+      startDateCell.innerText = formatDate(startDate);
+      startDateCell.setAttribute('data-raw', startDate);
+      newRow.insertCell().innerText = bidHours;
+      newRow.insertCell().innerText = hoursWorked;
+      let ouCell2 = newRow.insertCell();
+      ouCell2.innerText = overUnder;
+      const numericOverUnder2 = parseFloat(overUnder);
+      if (!isNaN(numericOverUnder2)) {
+        ouCell2.style.color = numericOverUnder2 > 0 ? 'green' : (numericOverUnder2 < 0 ? 'red' : '');
+      }
+      let estCell = newRow.insertCell();
+      estCell.innerText = formatDate(estCompletion);
+      estCell.setAttribute('data-raw', estCompletion);
+      newRow.insertCell().innerText = notes;
+      const actionCell2 = newRow.insertCell();
+      actionCell2.innerHTML = '<button class="btn-secondary no-pdf" onclick="openEditOngoing(this)">Edit</button> <button class="btn-secondary no-pdf" onclick="deleteRow(this)">Delete</button>';
+      // Clear inputs
+      document.getElementById('ongoingProjectNumber').value = '';
+      document.getElementById('ongoingSiteName').value = '';
+      document.getElementById('ongoingStartDate').value = '';
+      document.getElementById('ongoingBidHours').value = '';
+      document.getElementById('ongoingHoursWorked').value = '';
+      document.getElementById('ongoingEstCompletion').value = '';
+      document.getElementById('ongoingNotes').value = '';
+      closeOngoingForm();
+      updateStats();
+    }
+
+    // ======================
+    // ADD Deficiency / Follow-up
+    // ======================
+    function addDeficiency(event) {
+      event.preventDefault();
+      const siteName = document.getElementById('defSiteName').value.trim();
+      const isCritical = document.getElementById('defIsCritical').value;
+      const nextSteps = document.getElementById('defNextSteps').value.trim();
+      const followUpDate = document.getElementById('defFollowUpDate').value;
+      const assignedTo = document.getElementById('defAssignedTo').value.trim();
+      const tableBody = document.querySelector('#deficiencyTable tbody');
+      const newRow = tableBody.insertRow();
+      newRow.insertCell().innerText = siteName;
+      newRow.insertCell().innerText = isCritical;
+      newRow.insertCell().innerText = nextSteps;
+      let followUpCell = newRow.insertCell();
+      if (followUpDate) {
+        followUpCell.innerText = formatDate(followUpDate);
+        followUpCell.setAttribute('data-raw', followUpDate);
+      }
+      newRow.insertCell().innerText = assignedTo;
+      const actionCell3 = newRow.insertCell();
+      actionCell3.innerHTML = '<button class="btn-secondary no-pdf" onclick="openEditDeficiency(this)">Edit</button> <button class="btn-secondary no-pdf" onclick="deleteRow(this)">Delete</button>';
+      // Clear inputs
+      document.getElementById('defSiteName').value = '';
+      document.getElementById('defIsCritical').value = 'Y';
+      document.getElementById('defNextSteps').value = '';
+      document.getElementById('defFollowUpDate').value = '';
+      document.getElementById('defAssignedTo').value = '';
+      closeDeficiencyForm();
+      updateStats();
+    }
+
+    // ======================
+    // Global variables for current edit rows
+    // ======================
+    let currentEditCompletedRow = null;
+    let currentEditOngoingRow = null;
+    let currentEditDeficiencyRow = null;
+
+    // ======================
+    // EDIT Completed Inspection functions
+    // ======================
+    function openEditCompleted(btn) {
+      const row = btn.parentNode.parentNode;
+      currentEditCompletedRow = row;
+      document.getElementById('editCompletedProjectNumber').value = row.cells[0].innerText;
+      document.getElementById('editCompletedSiteName').value = row.cells[1].innerText;
+      const dateCompleted = row.cells[2].getAttribute('data-raw') || row.cells[2].innerText;
+      document.getElementById('editCompletedDate').value = dateCompleted;
+      document.getElementById('editCompletedBidHours').value = row.cells[3].innerText;
+      document.getElementById('editCompletedActualHours').value = row.cells[4].innerText;
+      document.getElementById('editCompletedDeficienciesFound').value = row.cells[6].innerText;
+      document.getElementById('editCompletedNotes').value = row.cells[7].innerText;
+      document.getElementById('editCompletedModal').style.display = 'flex';
+      setTimeout(() => document.getElementById('editCompletedProjectNumber').focus(), 100);
+    }
+    function closeEditCompletedForm() {
+      document.getElementById('editCompletedModal').style.display = 'none';
+      currentEditCompletedRow = null;
+    }
+    function editCompleted(event) {
+      event.preventDefault();
+      if (!currentEditCompletedRow) return;
+      const projectNumber = document.getElementById('editCompletedProjectNumber').value.trim();
+      const siteName = document.getElementById('editCompletedSiteName').value.trim();
+      const dateCompleted = document.getElementById('editCompletedDate').value;
+      const bidHours = document.getElementById('editCompletedBidHours').value.trim();
+      const actualHours = document.getElementById('editCompletedActualHours').value.trim();
+      const deficienciesFound = document.getElementById('editCompletedDeficienciesFound').value.trim();
+      const notes = document.getElementById('editCompletedNotes').value.trim();
+      const overUnder = calculateOverUnder(bidHours, actualHours);
+      currentEditCompletedRow.cells[0].innerText = projectNumber;
+      currentEditCompletedRow.cells[1].innerText = siteName;
+      currentEditCompletedRow.cells[2].innerText = formatDate(dateCompleted);
+      currentEditCompletedRow.cells[2].setAttribute('data-raw', dateCompleted);
+      currentEditCompletedRow.cells[3].innerText = bidHours;
+      currentEditCompletedRow.cells[4].innerText = actualHours;
+      currentEditCompletedRow.cells[5].innerText = overUnder;
+      const numericOverUnder = parseFloat(overUnder);
+      if (!isNaN(numericOverUnder)) {
+        currentEditCompletedRow.cells[5].style.color = numericOverUnder > 0 ? 'green' : (numericOverUnder < 0 ? 'red' : '');
+      }
+      currentEditCompletedRow.cells[6].innerText = deficienciesFound;
+      currentEditCompletedRow.cells[7].innerText = notes;
+      closeEditCompletedForm();
+      updateStats();
+    }
+
+    // ======================
+    // EDIT Ongoing Inspection functions
+    // ======================
+    function openEditOngoing(btn) {
+      const row = btn.parentNode.parentNode;
+      currentEditOngoingRow = row;
+      document.getElementById('editOngoingProjectNumber').value = row.cells[0].innerText;
+      document.getElementById('editOngoingSiteName').value = row.cells[1].innerText;
+      const startDate = row.cells[2].getAttribute('data-raw') || row.cells[2].innerText;
+      document.getElementById('editOngoingStartDate').value = startDate;
+      document.getElementById('editOngoingBidHours').value = row.cells[3].innerText;
+      document.getElementById('editOngoingHoursWorked').value = row.cells[4].innerText;
+      const estCompletion = row.cells[6].getAttribute('data-raw') || row.cells[6].innerText;
+      document.getElementById('editOngoingEstCompletion').value = estCompletion;
+      document.getElementById('editOngoingNotes').value = row.cells[7].innerText;
+      document.getElementById('editOngoingModal').style.display = 'flex';
+      setTimeout(() => document.getElementById('editOngoingProjectNumber').focus(), 100);
+    }
+    function closeEditOngoingForm() {
+      document.getElementById('editOngoingModal').style.display = 'none';
+      currentEditOngoingRow = null;
+    }
+    function editOngoing(event) {
+      event.preventDefault();
+      if (!currentEditOngoingRow) return;
+      const projectNumber = document.getElementById('editOngoingProjectNumber').value.trim();
+      const siteName = document.getElementById('editOngoingSiteName').value.trim();
+      const startDate = document.getElementById('editOngoingStartDate').value;
+      const bidHours = document.getElementById('editOngoingBidHours').value.trim();
+      const hoursWorked = document.getElementById('editOngoingHoursWorked').value.trim();
+      const estCompletion = document.getElementById('editOngoingEstCompletion').value;
+      const notes = document.getElementById('editOngoingNotes').value.trim();
+      const overUnder = calculateOverUnder(bidHours, hoursWorked);
+      currentEditOngoingRow.cells[0].innerText = projectNumber;
+      currentEditOngoingRow.cells[1].innerText = siteName;
+      currentEditOngoingRow.cells[2].innerText = formatDate(startDate);
+      currentEditOngoingRow.cells[2].setAttribute('data-raw', startDate);
+      currentEditOngoingRow.cells[3].innerText = bidHours;
+      currentEditOngoingRow.cells[4].innerText = hoursWorked;
+      currentEditOngoingRow.cells[5].innerText = overUnder;
+      const numericOverUnder = parseFloat(overUnder);
+      if (!isNaN(numericOverUnder)) {
+        currentEditOngoingRow.cells[5].style.color = numericOverUnder > 0 ? 'green' : (numericOverUnder < 0 ? 'red' : '');
+      }
+      currentEditOngoingRow.cells[6].innerText = formatDate(estCompletion);
+      currentEditOngoingRow.cells[6].setAttribute('data-raw', estCompletion);
+      currentEditOngoingRow.cells[7].innerText = notes;
+      closeEditOngoingForm();
+      updateStats();
+    }
+
+    // ======================
+    // EDIT Deficiency / Follow-up functions
+    // ======================
+    function openEditDeficiency(btn) {
+      const row = btn.parentNode.parentNode;
+      currentEditDeficiencyRow = row;
+      document.getElementById('editDefSiteName').value = row.cells[0].innerText;
+      document.getElementById('editDefIsCritical').value = row.cells[1].innerText;
+      document.getElementById('editDefNextSteps').value = row.cells[2].innerText;
+      const followUpDate = row.cells[3].getAttribute('data-raw') || row.cells[3].innerText;
+      document.getElementById('editDefFollowUpDate').value = followUpDate;
+      document.getElementById('editDefAssignedTo').value = row.cells[4].innerText;
+      document.getElementById('editDeficiencyModal').style.display = 'flex';
+      setTimeout(() => document.getElementById('editDefSiteName').focus(), 100);
+    }
+    function closeEditDeficiencyForm() {
+      document.getElementById('editDeficiencyModal').style.display = 'none';
+      currentEditDeficiencyRow = null;
+    }
+    function editDeficiency(event) {
+      event.preventDefault();
+      if (!currentEditDeficiencyRow) return;
+      const siteName = document.getElementById('editDefSiteName').value.trim();
+      const isCritical = document.getElementById('editDefIsCritical').value;
+      const nextSteps = document.getElementById('editDefNextSteps').value.trim();
+      const followUpDate = document.getElementById('editDefFollowUpDate').value;
+      const assignedTo = document.getElementById('editDefAssignedTo').value.trim();
+      currentEditDeficiencyRow.cells[0].innerText = siteName;
+      currentEditDeficiencyRow.cells[1].innerText = isCritical;
+      currentEditDeficiencyRow.cells[2].innerText = nextSteps;
+      if (followUpDate) {
+        currentEditDeficiencyRow.cells[3].innerText = formatDate(followUpDate);
+        currentEditDeficiencyRow.cells[3].setAttribute('data-raw', followUpDate);
+      } else {
+        currentEditDeficiencyRow.cells[3].innerText = '';
+        currentEditDeficiencyRow.cells[3].removeAttribute('data-raw');
+      }
+      currentEditDeficiencyRow.cells[4].innerText = assignedTo;
+      closeEditDeficiencyForm();
+      updateStats();
+    }
+
+    // ======================
+    // CLEAR ALL DATA (from all tables)
+    // ======================
+    function clearAllData() {
+      if (confirm("Are you sure you want to clear all entries?")) {
+        document.querySelector('#completedTable tbody').innerHTML = '';
+        document.querySelector('#ongoingTable tbody').innerHTML = '';
+        document.querySelector('#deficiencyTable tbody').innerHTML = '';
+        updateStats();
+      }
+    }
+
+    // ======================
+    // DOWNLOAD PDF
+    // Before capturing, hide all buttons with the "no-pdf" class,
+    // then restore them after generating the PDF.
+    // ======================
+    async function downloadPDF() {
+      // Hide all action buttons
+      const noPdfElements = document.querySelectorAll('.no-pdf');
+      noPdfElements.forEach(el => { el.style.display = 'none'; });
+      const pdfElement = document.getElementById('pdfContainer');
+      const canvas = await html2canvas(pdfElement, { scale: 2 });
+      const imgData = canvas.toDataURL('image/png');
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth  = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const canvasWidth  = canvas.width;
+      const canvasHeight = canvas.height;
+      const ratio = canvasHeight / canvasWidth;
+      const pdfImgWidth = pageWidth - 10;
+      const pdfImgHeight = pdfImgWidth * ratio;
+      let heightLeft = pdfImgHeight;
+      let position = 10;
+      pdf.addImage(imgData, 'PNG', 5, position, pdfImgWidth, pdfImgHeight, null, 'FAST');
+      heightLeft -= (pageHeight - 20);
+      while (heightLeft > 0) {
+        pdf.addPage();
+        position = 10;
+        pdf.addImage(imgData, 'PNG', 5, position - (pdfImgHeight - heightLeft), pdfImgWidth, pdfImgHeight, null, 'FAST');
+        heightLeft -= (pageHeight - 20);
+      }
+      pdf.save("WeeklyReport.pdf");
+      // Restore the action buttons
+      noPdfElements.forEach(el => { el.style.display = ''; });
+    }
+
+    // ======================
+    // INIT
+    // ======================
+    window.onload = function() { updateStats(); };
+  </script>
+
+</body>
+</html>
