@@ -481,27 +481,45 @@
 
   <script>
     // ======================
-    // Helper: Format Date to mm/dd/yyyy
+    // Parse date string from <input type="date"> in local time
     // ======================
-    function formatDate(dateString) {
-      if (!dateString) return '';
-      const date = new Date(dateString);
-      const month = ('0' + (date.getMonth() + 1)).slice(-2);
-      const day = ('0' + date.getDate()).slice(-2);
-      const year = date.getFullYear();
+    // <-- FIX HERE: we split the YYYY-MM-DD ourselves to avoid time-zone shifts.
+    function parseLocalDate(dateString) {
+      if (!dateString) return null;
+      const [year, month, day] = dateString.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
+
+    // ======================
+    // Format JS Date object as mm/dd/yyyy
+    // ======================
+    // <-- FIX HERE: We now pass in a Date object rather than the raw string
+    function formatDate(dateObj) {
+      if (!dateObj) return '';
+      const month = ('0' + (dateObj.getMonth() + 1)).slice(-2);
+      const day = ('0' + dateObj.getDate()).slice(-2);
+      const year = dateObj.getFullYear();
       return `${month}/${day}/${year}`;
     }
 
     // ======================
-    // UPDATE DATE RANGE (using formatted dates)
+    // Convenience to combine parse + format in one step
+    // ======================
+    function formatDateString(dateString) {
+      const dateObj = parseLocalDate(dateString);
+      return formatDate(dateObj);
+    }
+
+    // ======================
+    // UPDATE DATE RANGE (using fixed date parsing)
     // ======================
     function updateDateRange(event) {
       event.preventDefault();
       const start = document.getElementById('startDate').value;
       const end = document.getElementById('endDate').value;
       if (!start || !end) return;
-      const startFmt = formatDate(start);
-      const endFmt = formatDate(end);
+      const startFmt = formatDateString(start);
+      const endFmt = formatDateString(end);
       document.getElementById('dateRangeDisplay').innerText = `${startFmt} - ${endFmt}`;
     }
 
@@ -557,6 +575,7 @@
       // Completed
       const completedRows = document.querySelectorAll('#completedTable tbody tr');
       document.getElementById('totalCompletedCount').innerText = completedRows.length;
+
       let sumBidCompleted = 0, sumActualCompleted = 0;
       completedRows.forEach(row => {
         const bidHours = parseFloat(row.cells[3].innerText) || 0;
@@ -564,6 +583,7 @@
         sumBidCompleted += bidHours;
         sumActualCompleted += actualHours;
       });
+
       // Ongoing
       const ongoingRows = document.querySelectorAll('#ongoingTable tbody tr');
       let sumBidOngoing = 0, sumWorkedOngoing = 0;
@@ -573,10 +593,12 @@
         sumBidOngoing += bidHours;
         sumWorkedOngoing += workedHours;
       });
+
       const totalBid = sumBidCompleted + sumBidOngoing;
       const totalWorked = sumActualCompleted + sumWorkedOngoing;
       document.getElementById('totalBidHours').innerText = totalBid.toFixed(2);
       document.getElementById('totalHoursWorked').innerText = totalWorked.toFixed(2);
+
       // Deficiencies
       const deficiencyRows = document.querySelectorAll('#deficiencyTable tbody tr');
       document.getElementById('defSiteCount').innerText = deficiencyRows.length;
@@ -605,25 +627,34 @@
       const deficienciesFound = document.getElementById('completedDeficienciesFound').value.trim();
       const notes = document.getElementById('completedNotes').value.trim();
       const overUnder = calculateOverUnder(bidHours, actualHours);
+
       const tableBody = document.querySelector('#completedTable tbody');
       const newRow = tableBody.insertRow();
+
       newRow.insertCell().innerText = projectNumber;
       newRow.insertCell().innerText = siteName;
+
+      // <-- FIX HERE: Use our formatDateString
       let dateCell = newRow.insertCell();
-      dateCell.innerText = formatDate(dateCompleted);
+      dateCell.innerText = formatDateString(dateCompleted);
       dateCell.setAttribute('data-raw', dateCompleted);
+
       newRow.insertCell().innerText = bidHours;
       newRow.insertCell().innerText = actualHours;
+
       let ouCell = newRow.insertCell();
       ouCell.innerText = overUnder;
       const numericOverUnder = parseFloat(overUnder);
       if (!isNaN(numericOverUnder)) {
         ouCell.style.color = numericOverUnder > 0 ? 'green' : (numericOverUnder < 0 ? 'red' : '');
       }
+
       newRow.insertCell().innerText = deficienciesFound;
       newRow.insertCell().innerText = notes;
+
       const actionCell = newRow.insertCell();
       actionCell.innerHTML = '<button class="btn-secondary no-pdf" onclick="openEditCompleted(this)">Edit</button> <button class="btn-secondary no-pdf" onclick="deleteRow(this)">Delete</button>';
+
       // Clear inputs
       document.getElementById('completedProjectNumber').value = '';
       document.getElementById('completedSiteName').value = '';
@@ -649,27 +680,37 @@
       const estCompletion = document.getElementById('ongoingEstCompletion').value;
       const notes = document.getElementById('ongoingNotes').value.trim();
       const overUnder = calculateOverUnder(bidHours, hoursWorked);
+
       const tableBody = document.querySelector('#ongoingTable tbody');
       const newRow = tableBody.insertRow();
+
       newRow.insertCell().innerText = projectNumber;
       newRow.insertCell().innerText = siteName;
+
+      // <-- FIX HERE: Use our formatDateString
       let startDateCell = newRow.insertCell();
-      startDateCell.innerText = formatDate(startDate);
+      startDateCell.innerText = formatDateString(startDate);
       startDateCell.setAttribute('data-raw', startDate);
+
       newRow.insertCell().innerText = bidHours;
       newRow.insertCell().innerText = hoursWorked;
+
       let ouCell2 = newRow.insertCell();
       ouCell2.innerText = overUnder;
       const numericOverUnder2 = parseFloat(overUnder);
       if (!isNaN(numericOverUnder2)) {
         ouCell2.style.color = numericOverUnder2 > 0 ? 'green' : (numericOverUnder2 < 0 ? 'red' : '');
       }
+
       let estCell = newRow.insertCell();
-      estCell.innerText = formatDate(estCompletion);
+      estCell.innerText = formatDateString(estCompletion);
       estCell.setAttribute('data-raw', estCompletion);
+
       newRow.insertCell().innerText = notes;
+
       const actionCell2 = newRow.insertCell();
       actionCell2.innerHTML = '<button class="btn-secondary no-pdf" onclick="openEditOngoing(this)">Edit</button> <button class="btn-secondary no-pdf" onclick="deleteRow(this)">Delete</button>';
+
       // Clear inputs
       document.getElementById('ongoingProjectNumber').value = '';
       document.getElementById('ongoingSiteName').value = '';
@@ -692,19 +733,25 @@
       const nextSteps = document.getElementById('defNextSteps').value.trim();
       const followUpDate = document.getElementById('defFollowUpDate').value;
       const assignedTo = document.getElementById('defAssignedTo').value.trim();
+
       const tableBody = document.querySelector('#deficiencyTable tbody');
       const newRow = tableBody.insertRow();
+
       newRow.insertCell().innerText = siteName;
       newRow.insertCell().innerText = isCritical;
       newRow.insertCell().innerText = nextSteps;
+
       let followUpCell = newRow.insertCell();
       if (followUpDate) {
-        followUpCell.innerText = formatDate(followUpDate);
+        followUpCell.innerText = formatDateString(followUpDate); // <-- FIX HERE
         followUpCell.setAttribute('data-raw', followUpDate);
       }
+
       newRow.insertCell().innerText = assignedTo;
+
       const actionCell3 = newRow.insertCell();
       actionCell3.innerHTML = '<button class="btn-secondary no-pdf" onclick="openEditDeficiency(this)">Edit</button> <button class="btn-secondary no-pdf" onclick="deleteRow(this)">Delete</button>';
+
       // Clear inputs
       document.getElementById('defSiteName').value = '';
       document.getElementById('defIsCritical').value = 'Y';
@@ -730,8 +777,10 @@
       currentEditCompletedRow = row;
       document.getElementById('editCompletedProjectNumber').value = row.cells[0].innerText;
       document.getElementById('editCompletedSiteName').value = row.cells[1].innerText;
+
       const dateCompleted = row.cells[2].getAttribute('data-raw') || row.cells[2].innerText;
       document.getElementById('editCompletedDate').value = dateCompleted;
+
       document.getElementById('editCompletedBidHours').value = row.cells[3].innerText;
       document.getElementById('editCompletedActualHours').value = row.cells[4].innerText;
       document.getElementById('editCompletedDeficienciesFound').value = row.cells[6].innerText;
@@ -746,6 +795,7 @@
     function editCompleted(event) {
       event.preventDefault();
       if (!currentEditCompletedRow) return;
+
       const projectNumber = document.getElementById('editCompletedProjectNumber').value.trim();
       const siteName = document.getElementById('editCompletedSiteName').value.trim();
       const dateCompleted = document.getElementById('editCompletedDate').value;
@@ -754,17 +804,21 @@
       const deficienciesFound = document.getElementById('editCompletedDeficienciesFound').value.trim();
       const notes = document.getElementById('editCompletedNotes').value.trim();
       const overUnder = calculateOverUnder(bidHours, actualHours);
+
       currentEditCompletedRow.cells[0].innerText = projectNumber;
       currentEditCompletedRow.cells[1].innerText = siteName;
-      currentEditCompletedRow.cells[2].innerText = formatDate(dateCompleted);
+      currentEditCompletedRow.cells[2].innerText = formatDateString(dateCompleted); // <-- Fix
       currentEditCompletedRow.cells[2].setAttribute('data-raw', dateCompleted);
+
       currentEditCompletedRow.cells[3].innerText = bidHours;
       currentEditCompletedRow.cells[4].innerText = actualHours;
       currentEditCompletedRow.cells[5].innerText = overUnder;
+
       const numericOverUnder = parseFloat(overUnder);
       if (!isNaN(numericOverUnder)) {
         currentEditCompletedRow.cells[5].style.color = numericOverUnder > 0 ? 'green' : (numericOverUnder < 0 ? 'red' : '');
       }
+
       currentEditCompletedRow.cells[6].innerText = deficienciesFound;
       currentEditCompletedRow.cells[7].innerText = notes;
       closeEditCompletedForm();
@@ -779,12 +833,16 @@
       currentEditOngoingRow = row;
       document.getElementById('editOngoingProjectNumber').value = row.cells[0].innerText;
       document.getElementById('editOngoingSiteName').value = row.cells[1].innerText;
+
       const startDate = row.cells[2].getAttribute('data-raw') || row.cells[2].innerText;
       document.getElementById('editOngoingStartDate').value = startDate;
+
       document.getElementById('editOngoingBidHours').value = row.cells[3].innerText;
       document.getElementById('editOngoingHoursWorked').value = row.cells[4].innerText;
+
       const estCompletion = row.cells[6].getAttribute('data-raw') || row.cells[6].innerText;
       document.getElementById('editOngoingEstCompletion').value = estCompletion;
+
       document.getElementById('editOngoingNotes').value = row.cells[7].innerText;
       document.getElementById('editOngoingModal').style.display = 'flex';
       setTimeout(() => document.getElementById('editOngoingProjectNumber').focus(), 100);
@@ -796,6 +854,7 @@
     function editOngoing(event) {
       event.preventDefault();
       if (!currentEditOngoingRow) return;
+
       const projectNumber = document.getElementById('editOngoingProjectNumber').value.trim();
       const siteName = document.getElementById('editOngoingSiteName').value.trim();
       const startDate = document.getElementById('editOngoingStartDate').value;
@@ -804,18 +863,22 @@
       const estCompletion = document.getElementById('editOngoingEstCompletion').value;
       const notes = document.getElementById('editOngoingNotes').value.trim();
       const overUnder = calculateOverUnder(bidHours, hoursWorked);
+
       currentEditOngoingRow.cells[0].innerText = projectNumber;
       currentEditOngoingRow.cells[1].innerText = siteName;
-      currentEditOngoingRow.cells[2].innerText = formatDate(startDate);
+      currentEditOngoingRow.cells[2].innerText = formatDateString(startDate);
       currentEditOngoingRow.cells[2].setAttribute('data-raw', startDate);
+
       currentEditOngoingRow.cells[3].innerText = bidHours;
       currentEditOngoingRow.cells[4].innerText = hoursWorked;
       currentEditOngoingRow.cells[5].innerText = overUnder;
+
       const numericOverUnder = parseFloat(overUnder);
       if (!isNaN(numericOverUnder)) {
         currentEditOngoingRow.cells[5].style.color = numericOverUnder > 0 ? 'green' : (numericOverUnder < 0 ? 'red' : '');
       }
-      currentEditOngoingRow.cells[6].innerText = formatDate(estCompletion);
+
+      currentEditOngoingRow.cells[6].innerText = formatDateString(estCompletion);
       currentEditOngoingRow.cells[6].setAttribute('data-raw', estCompletion);
       currentEditOngoingRow.cells[7].innerText = notes;
       closeEditOngoingForm();
@@ -831,8 +894,10 @@
       document.getElementById('editDefSiteName').value = row.cells[0].innerText;
       document.getElementById('editDefIsCritical').value = row.cells[1].innerText;
       document.getElementById('editDefNextSteps').value = row.cells[2].innerText;
+
       const followUpDate = row.cells[3].getAttribute('data-raw') || row.cells[3].innerText;
       document.getElementById('editDefFollowUpDate').value = followUpDate;
+
       document.getElementById('editDefAssignedTo').value = row.cells[4].innerText;
       document.getElementById('editDeficiencyModal').style.display = 'flex';
       setTimeout(() => document.getElementById('editDefSiteName').focus(), 100);
@@ -844,21 +909,25 @@
     function editDeficiency(event) {
       event.preventDefault();
       if (!currentEditDeficiencyRow) return;
+
       const siteName = document.getElementById('editDefSiteName').value.trim();
       const isCritical = document.getElementById('editDefIsCritical').value;
       const nextSteps = document.getElementById('editDefNextSteps').value.trim();
       const followUpDate = document.getElementById('editDefFollowUpDate').value;
       const assignedTo = document.getElementById('editDefAssignedTo').value.trim();
+
       currentEditDeficiencyRow.cells[0].innerText = siteName;
       currentEditDeficiencyRow.cells[1].innerText = isCritical;
       currentEditDeficiencyRow.cells[2].innerText = nextSteps;
+
       if (followUpDate) {
-        currentEditDeficiencyRow.cells[3].innerText = formatDate(followUpDate);
+        currentEditDeficiencyRow.cells[3].innerText = formatDateString(followUpDate);
         currentEditDeficiencyRow.cells[3].setAttribute('data-raw', followUpDate);
       } else {
         currentEditDeficiencyRow.cells[3].innerText = '';
         currentEditDeficiencyRow.cells[3].removeAttribute('data-raw');
       }
+
       currentEditDeficiencyRow.cells[4].innerText = assignedTo;
       closeEditDeficiencyForm();
       updateStats();
@@ -885,6 +954,7 @@
       // Hide all action buttons
       const noPdfElements = document.querySelectorAll('.no-pdf');
       noPdfElements.forEach(el => { el.style.display = 'none'; });
+
       const pdfElement = document.getElementById('pdfContainer');
       const canvas = await html2canvas(pdfElement, { scale: 2 });
       const imgData = canvas.toDataURL('image/png');
@@ -892,6 +962,7 @@
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth  = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
+
       const canvasWidth  = canvas.width;
       const canvasHeight = canvas.height;
       const ratio = canvasHeight / canvasWidth;
@@ -899,8 +970,10 @@
       const pdfImgHeight = pdfImgWidth * ratio;
       let heightLeft = pdfImgHeight;
       let position = 10;
+
       pdf.addImage(imgData, 'PNG', 5, position, pdfImgWidth, pdfImgHeight, null, 'FAST');
       heightLeft -= (pageHeight - 20);
+
       while (heightLeft > 0) {
         pdf.addPage();
         position = 10;
@@ -908,6 +981,7 @@
         heightLeft -= (pageHeight - 20);
       }
       pdf.save("WeeklyReport.pdf");
+
       // Restore the action buttons
       noPdfElements.forEach(el => { el.style.display = ''; });
     }
