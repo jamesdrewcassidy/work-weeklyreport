@@ -10,14 +10,29 @@
 
   <style>
     /* ========== GLOBAL RESET & BODY ========== */
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: Arial, sans-serif;
-      color: #333;
-      margin: 20px;
-      line-height: 1.4;
-      background-color: #fefefe;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
+    body {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      color: #333;
+      background-color: #fff; /* Keep white background for a clean PDF */
+      margin: 20px;
+    }
+
+    /* ========== CONTAINER FOR PDF & MAX-WIDTH ========== */
+    #pdfContainer {
+      max-width: 920px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 6px;
+      /* You can remove the box-shadow entirely if you want a completely flat look: */
+      /* box-shadow: 0 3px 6px rgba(0,0,0,0.1); */
+    }
+
     /* ========== BUTTONS ========== */
     button {
       cursor: pointer;
@@ -25,61 +40,194 @@
       border-radius: 4px;
       font-size: 0.9rem;
       padding: 8px 14px;
-      transition: background-color 0.2s ease;
-      margin: 4px 4px 12px 0;
+      transition: background-color 0.2s ease, box-shadow 0.2s ease;
+      margin: 0 6px 12px 0;
     }
-    .btn-primary { background-color: #007bff; color: #fff; }
-    .btn-primary:hover { background-color: #0056b3; }
-    .btn-secondary { background-color: #6c757d; color: #fff; }
-    .btn-secondary:hover { background-color: #495057; }
-    .btn-success { background-color: #28a745; color: #fff; }
-    .btn-success:hover { background-color: #218838; }
+    button:hover {
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    }
+    .btn-primary {
+      background-color: #007bff;
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background-color: #0056b3;
+    }
+    .btn-secondary {
+      background-color: #6c757d;
+      color: #fff;
+    }
+    .btn-secondary:hover {
+      background-color: #495057;
+    }
+    .btn-success {
+      background-color: #28a745;
+      color: #fff;
+    }
+    .btn-success:hover {
+      background-color: #218838;
+    }
+
     /* ========== HEADINGS ========== */
-    h1 { margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1.4rem; }
-    h2 { margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; }
-    h3 { margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1.1rem; }
-    /* ========== PDF CONTAINER ========== */
-    #pdfContainer {
-      background-color: #ffffff;
-      padding: 0 10px 10px 10px; 
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    h1 {
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 1.8rem;
+      color: #2c3e50;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
+    h2 {
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #2c3e50;
+      border-left: 4px solid #007bff;
+      padding-left: 8px;
+    }
+    h3 {
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+      color: #2c3e50;
+    }
+
+    /* ========== TOP ACTIONS WRAPPER ========== */
+    .top-actions {
+      max-width: 920px;
+      margin: 0 auto 1rem auto;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
     /* ========== REPORT SUMMARY ========== */
     #reportSummary {
-      background-color: #f9f9f9;
+      background-color: #fefefe; /* Very light, nearly white */
       padding: 15px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      border: 1px solid #eee;
+      border-radius: 6px;
       margin-bottom: 20px;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.04);
     }
-    #reportSummary p { margin-bottom: 0.5rem; }
-    /* ========== TABLES ========== */
+    #reportSummary p {
+      margin-bottom: 0.5rem;
+      line-height: 1.4;
+    }
+
+    /* ========== TABLES & STRIPED ROWS REMOVED ========== */
     table {
+      table-layout: auto;
       width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
-      margin-bottom: 20px;
+      margin: 10px 0 20px 0;
       font-size: 0.9rem;
     }
     table thead th {
-      background-color: #f2f2f2;
+      /* Removed background-color to avoid gray blocks. */
+      background-color: #fff;
       padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
     }
     th, td {
-      border: 1px solid #ccc;
+      border: 1px solid #ddd;
       padding: 8px;
-      text-align: left;
       vertical-align: top;
+      word-wrap: break-word;
+      white-space: normal;
     }
-    tr:hover td { background-color: #f8f8f8; }
-    /* ========== OBSERVATIONS SECTION ========== */
-    .observations-section { margin-bottom: 2rem; }
-    .observations-section textarea { height: 60px; }
+    /* Remove striped row shading */
+    tbody tr:nth-child(even) {
+      background-color: #fff;
+    }
+    /* Remove hover shading */
+    tr:hover td {
+      background-color: #fff;
+    }
+
+    /* Over/Under color coding */
+    .over-budget {
+      color: red;
+      font-weight: bold;
+    }
+    .under-budget {
+      color: green;
+      font-weight: bold;
+    }
+
+    /* Highlight critical deficiency rows */
+    .critical-def td {
+      background-color: #ffecec; /* Light red/pink background for critical only */
+    }
+
     /* ========== FORMS, INPUTS, MODALS ========== */
-    .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-weight: bold; margin-bottom: 4px; }
+    form {
+      margin: 0;
+    }
+    .modal {
+      display: none; 
+      position: fixed; 
+      z-index: 999; 
+      left: 0; 
+      top: 0;
+      width: 100%; 
+      height: 100%;
+      overflow: auto; 
+      background-color: rgba(0,0,0,0.45);
+      justify-content: center; 
+      align-items: center;
+      animation: fadeOut 0.3s forwards;
+    }
+    .modal.show {
+      display: flex !important;
+      animation: fadeIn 0.3s forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to   { opacity: 0; }
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: auto;
+      padding: 20px;
+      border-radius: 6px;
+      width: 400px;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      animation: slideDown 0.3s;
+    }
+    @keyframes slideDown {
+      from { transform: translateY(-15px); }
+      to   { transform: translateY(0); }
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: -2px;
+    }
+    .close:hover {
+      color: #000;
+    }
+    .form-group {
+      margin-bottom: 12px;
+    }
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
     input[type="text"],
     input[type="date"],
     textarea,
@@ -91,65 +239,79 @@
       border-radius: 4px;
       font-size: 0.9rem;
     }
-    .submit-btn { margin-top: 6px; font-size: 0.9rem; border-radius: 4px; padding: 8px 14px; }
-    .modal {
-      display: none; 
-      position: fixed; 
-      z-index: 999; 
-      left: 0; top: 0;
-      width: 100%; height: 100%;
-      overflow: auto; 
-      background-color: rgba(0,0,0,0.4);
-      justify-content: center; align-items: center;
-    }
-    .modal-content {
-      background-color: #fff;
-      margin: auto;
-      padding: 20px;
-      border-radius: 6px;
-      width: 400px;
-      position: relative;
-      animation: fadeIn 0.3s;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .close {
+    /* placeholders for guidance */
+    input::placeholder,
+    textarea::placeholder {
       color: #aaa;
-      float: right;
-      font-size: 24px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: -5px;
     }
-    .close:hover { color: #000; }
+    .submit-btn {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      border-radius: 4px;
+      padding: 8px 14px;
+    }
+
+    /* ========== OBSERVATIONS SECTION ========== */
+    .observations-section {
+      margin-bottom: 2rem;
+    }
+    .observations-section textarea {
+      height: 60px;
+      resize: vertical;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    /* ========== HIDE .no-pdf FOR PRINT ========== */
+    @media print {
+      .no-pdf {
+        display: none !important;
+      }
+    }
+
     /* ========== RESPONSIVE ========== */
     @media (max-width: 600px) {
-      body { margin: 10px; }
-      .modal-content { width: 90% !important; }
-      table, th, td { font-size: 0.8rem; }
-      h2 { flex-direction: column; align-items: flex-start; }
+      body {
+        margin: 10px;
+      }
+      #pdfContainer {
+        padding: 10px;
+      }
+      .modal-content {
+        width: 90% !important;
+      }
+      table, th, td {
+        font-size: 0.8rem;
+      }
+      h2 {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      #dateRangeForm input[type="date"] {
+        margin: 4px 10px 4px 0;
+      }
     }
   </style>
 </head>
 <body>
 
   <!-- ========== TOP-LEVEL UI ELEMENTS (NOT IN PDF) ========== -->
-  <button class="btn-primary" onclick="downloadPDF()">Download PDF</button>
-  <button class="btn-secondary" onclick="clearAllData()">Clear All Entries</button>
+  <div class="top-actions">
+    <button class="btn-primary" onclick="downloadPDF()">Download PDF</button>
+    <button class="btn-secondary" onclick="clearAllData()">Clear All Entries</button>
+  </div>
 
   <!-- Date Range Form -->
-  <form id="dateRangeForm" onsubmit="updateDateRange(event)">
-    <label for="startDate"><strong>Start Date:</strong></label>
+  <form id="dateRangeForm" onsubmit="updateDateRange(event)" style="max-width: 920px; margin: 0 auto 1rem auto;">
+    <label for="startDate" style="margin-right: 6px; font-weight: 600;">Start Date:</label>
     <input type="date" id="startDate" required>
-    <label for="endDate"><strong>End Date:</strong></label>
+    <label for="endDate" style="margin-left: 10px; margin-right: 6px; font-weight: 600;">End Date:</label>
     <input type="date" id="endDate" required>
-    <button class="btn-secondary" type="submit">Set Date Range</button>
+    <button class="btn-secondary" type="submit" style="margin-top:4px;">Set Date Range</button>
   </form>
 
   <!-- “Add” Buttons for data entry -->
-  <div style="margin-bottom: 1rem;">
+  <div style="max-width:920px; margin:0 auto 1rem auto;">
     <button class="btn-primary" onclick="showCompletedForm()">Add Completed Inspection</button>
     <button class="btn-primary" onclick="showOngoingForm()">Add Ongoing Inspection</button>
     <button class="btn-primary" onclick="showDeficiencyForm()">Add Deficiency / Follow-up</button>
@@ -180,15 +342,15 @@
       <table id="completedTable">
         <thead>
           <tr>
-            <th>Project Number</th>
+            <th>Project #</th>
             <th>Site Name</th>
             <th>Date Completed</th>
             <th>Bid Hours</th>
             <th>Actual Hours</th>
             <th>Over/Under %</th>
-            <th>Deficiencies Found (#)</th>
+            <th>Deficiencies (#)</th>
             <th>Notes</th>
-            <th>Actions</th>
+            <th class="no-pdf">Actions</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -201,15 +363,15 @@
       <table id="ongoingTable">
         <thead>
           <tr>
-            <th>Project Number</th>
+            <th>Project #</th>
             <th>Site Name</th>
             <th>Start Date</th>
             <th>Bid Hours</th>
-            <th>Hours Worked So Far</th>
+            <th>Hours Worked</th>
             <th>Over/Under %</th>
-            <th>Estimated Completion Date</th>
+            <th>Est. Completion</th>
             <th>Notes</th>
-            <th>Actions</th>
+            <th class="no-pdf">Actions</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -223,11 +385,11 @@
         <thead>
           <tr>
             <th>Site Name</th>
-            <th>Deficiencies Found Critical? (Y/N)</th>
+            <th>Critical? (Y/N)</th>
             <th>Next Steps</th>
             <th>Follow Up Date</th>
             <th>Assigned To</th>
-            <th>Actions</th>
+            <th class="no-pdf">Actions</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -239,21 +401,23 @@
       <h2>Key Observations & Recommendations</h2>
       <div class="form-group">
         <label for="trendsNoticed">Trends Noticed:</label>
-        <textarea id="trendsNoticed"></textarea>
+        <textarea id="trendsNoticed" placeholder="Any common findings or patterns here?"></textarea>
       </div>
       <div class="form-group">
         <label for="resourceChallenges">Resource Challenges:</label>
-        <textarea id="resourceChallenges"></textarea>
+        <textarea id="resourceChallenges" placeholder="Equipment or personnel issues, scheduling, etc."></textarea>
       </div>
       <div class="form-group">
         <label for="suggestedImprovements">Suggested Process Improvements:</label>
-        <textarea id="suggestedImprovements"></textarea>
+        <textarea id="suggestedImprovements" placeholder="Ideas to improve efficiency or quality."></textarea>
       </div>
     </section>
   </div>
   <!-- /#pdfContainer -->
 
-  <!-- ========== ADD MODALS ========== -->
+  <!-- =========================================
+       MODALS FOR ADDING/EDITING
+       ========================================= -->
   <!-- Completed Inspection Modal -->
   <div id="completedModal" class="modal" onclick="outsideClickClose(event, 'completedModal')">
     <div class="modal-content">
@@ -262,11 +426,11 @@
       <form onsubmit="addCompleted(event)">
         <div class="form-group">
           <label for="completedProjectNumber">Project Number</label>
-          <input type="text" id="completedProjectNumber" required autofocus/>
+          <input type="text" id="completedProjectNumber" placeholder="e.g. 1001A" required autofocus/>
         </div>
         <div class="form-group">
           <label for="completedSiteName">Site Name</label>
-          <input type="text" id="completedSiteName" required />
+          <input type="text" id="completedSiteName" placeholder="e.g. Main St. Warehouse" required />
         </div>
         <div class="form-group">
           <label for="completedDate">Date Completed</label>
@@ -274,19 +438,19 @@
         </div>
         <div class="form-group">
           <label for="completedBidHours">Bid Hours</label>
-          <input type="text" id="completedBidHours" required />
+          <input type="text" id="completedBidHours" placeholder="e.g. 10" required />
         </div>
         <div class="form-group">
           <label for="completedActualHours">Actual Hours</label>
-          <input type="text" id="completedActualHours" required />
+          <input type="text" id="completedActualHours" placeholder="e.g. 12.5" required />
         </div>
         <div class="form-group">
           <label for="completedDeficienciesFound">Deficiencies Found (#)</label>
-          <input type="text" id="completedDeficienciesFound" required />
+          <input type="text" id="completedDeficienciesFound" placeholder="e.g. 2" required />
         </div>
         <div class="form-group">
           <label for="completedNotes">Notes</label>
-          <textarea id="completedNotes"></textarea>
+          <textarea id="completedNotes" placeholder="e.g. Completed ahead of schedule..."></textarea>
         </div>
         <button type="submit" class="submit-btn btn-success">Add</button>
       </form>
@@ -301,11 +465,11 @@
       <form onsubmit="addOngoing(event)">
         <div class="form-group">
           <label for="ongoingProjectNumber">Project Number</label>
-          <input type="text" id="ongoingProjectNumber" required autofocus/>
+          <input type="text" id="ongoingProjectNumber" placeholder="e.g. 1023B" required autofocus/>
         </div>
         <div class="form-group">
           <label for="ongoingSiteName">Site Name</label>
-          <input type="text" id="ongoingSiteName" required />
+          <input type="text" id="ongoingSiteName" placeholder="e.g. Riverside Plant" required />
         </div>
         <div class="form-group">
           <label for="ongoingStartDate">Start Date</label>
@@ -313,11 +477,11 @@
         </div>
         <div class="form-group">
           <label for="ongoingBidHours">Bid Hours</label>
-          <input type="text" id="ongoingBidHours" required />
+          <input type="text" id="ongoingBidHours" placeholder="e.g. 15" required />
         </div>
         <div class="form-group">
           <label for="ongoingHoursWorked">Hours Worked So Far</label>
-          <input type="text" id="ongoingHoursWorked" required />
+          <input type="text" id="ongoingHoursWorked" placeholder="e.g. 7.5" required />
         </div>
         <div class="form-group">
           <label for="ongoingEstCompletion">Estimated Completion Date</label>
@@ -325,7 +489,7 @@
         </div>
         <div class="form-group">
           <label for="ongoingNotes">Notes</label>
-          <textarea id="ongoingNotes"></textarea>
+          <textarea id="ongoingNotes" placeholder="e.g. Expect to finish early..."></textarea>
         </div>
         <button type="submit" class="submit-btn btn-success">Add</button>
       </form>
@@ -340,7 +504,7 @@
       <form onsubmit="addDeficiency(event)">
         <div class="form-group">
           <label for="defSiteName">Site Name</label>
-          <input type="text" id="defSiteName" required autofocus/>
+          <input type="text" id="defSiteName" placeholder="e.g. North Dock" required autofocus/>
         </div>
         <div class="form-group">
           <label for="defIsCritical">Deficiencies Found Critical? (Y/N)</label>
@@ -351,7 +515,7 @@
         </div>
         <div class="form-group">
           <label for="defNextSteps">Next Steps</label>
-          <textarea id="defNextSteps"></textarea>
+          <textarea id="defNextSteps" placeholder="e.g. Order new safety signage..."></textarea>
         </div>
         <div class="form-group">
           <label for="defFollowUpDate">Follow Up Date</label>
@@ -359,14 +523,13 @@
         </div>
         <div class="form-group">
           <label for="defAssignedTo">Assigned To</label>
-          <input type="text" id="defAssignedTo" />
+          <input type="text" id="defAssignedTo" placeholder="e.g. John Doe" />
         </div>
         <button type="submit" class="submit-btn btn-success">Add</button>
       </form>
     </div>
   </div>
 
-  <!-- ========== EDIT MODALS ========== -->
   <!-- Edit Completed Inspection Modal -->
   <div id="editCompletedModal" class="modal" onclick="outsideClickClose(event, 'editCompletedModal')">
     <div class="modal-content">
@@ -481,493 +644,151 @@
 
   <script>
     // ======================
-    // Parse date string from <input type="date"> in local time
+    // LOCAL STORAGE KEYS
     // ======================
-    // <-- FIX HERE: we split the YYYY-MM-DD ourselves to avoid time-zone shifts.
+    const LS_COMPLETED_KEY   = 'weekly_completed';
+    const LS_ONGOING_KEY     = 'weekly_ongoing';
+    const LS_DEFICIENCIES_KEY= 'weekly_deficiencies';
+    const LS_NOTES_KEY       = 'weekly_notes';
+    const LS_DATE_RANGE_KEY  = 'weekly_dateRange';
+
+    // ======================
+    // DATE HELPERS
+    // ======================
     function parseLocalDate(dateString) {
       if (!dateString) return null;
       const [year, month, day] = dateString.split('-').map(Number);
       return new Date(year, month - 1, day);
     }
-
-    // ======================
-    // Format JS Date object as mm/dd/yyyy
-    // ======================
-    // <-- FIX HERE: We now pass in a Date object rather than the raw string
     function formatDate(dateObj) {
       if (!dateObj) return '';
-      const month = ('0' + (dateObj.getMonth() + 1)).slice(-2);
-      const day = ('0' + dateObj.getDate()).slice(-2);
-      const year = dateObj.getFullYear();
-      return `${month}/${day}/${year}`;
+      const mm = ('0' + (dateObj.getMonth() + 1)).slice(-2);
+      const dd = ('0' + dateObj.getDate()).slice(-2);
+      const yyyy = dateObj.getFullYear();
+      return `${mm}/${dd}/${yyyy}`;
     }
-
-    // ======================
-    // Convenience to combine parse + format in one step
-    // ======================
     function formatDateString(dateString) {
-      const dateObj = parseLocalDate(dateString);
-      return formatDate(dateObj);
+      const d = parseLocalDate(dateString);
+      return d ? formatDate(d) : '';
     }
 
     // ======================
-    // UPDATE DATE RANGE (using fixed date parsing)
-    // ======================
-    function updateDateRange(event) {
-      event.preventDefault();
-      const start = document.getElementById('startDate').value;
-      const end = document.getElementById('endDate').value;
-      if (!start || !end) return;
-      const startFmt = formatDateString(start);
-      const endFmt = formatDateString(end);
-      document.getElementById('dateRangeDisplay').innerText = `${startFmt} - ${endFmt}`;
-    }
-
-    // ======================
-    // MODALS: Show, close, and set focus
-    // ======================
-    function showCompletedForm() {
-      document.getElementById('completedModal').style.display = 'flex';
-      setTimeout(() => document.getElementById('completedProjectNumber').focus(), 100);
-    }
-    function closeCompletedForm() {
-      document.getElementById('completedModal').style.display = 'none';
-    }
-    function showOngoingForm() {
-      document.getElementById('ongoingModal').style.display = 'flex';
-      setTimeout(() => document.getElementById('ongoingProjectNumber').focus(), 100);
-    }
-    function closeOngoingForm() {
-      document.getElementById('ongoingModal').style.display = 'none';
-    }
-    function showDeficiencyForm() {
-      document.getElementById('deficiencyModal').style.display = 'flex';
-      setTimeout(() => document.getElementById('defSiteName').focus(), 100);
-    }
-    function closeDeficiencyForm() {
-      document.getElementById('deficiencyModal').style.display = 'none';
-    }
-    function outsideClickClose(event, modalId) {
-      if (event.target.id === modalId) {
-        document.getElementById(modalId).style.display = 'none';
-      }
-    }
-
-    // ======================
-    // CALCULATE Over/Under %
-    // (bid - actual) / bid => positive => Under, negative => Over
+    // OVER/UNDER UTILITY
     // ======================
     function calculateOverUnder(bid, actual) {
-      const bidH = parseFloat(bid);
-      const actualH = parseFloat(actual);
-      if (isNaN(bidH) || isNaN(actualH) || bidH === 0) {
-        return 'N/A';
+      const b = parseFloat(bid), a = parseFloat(actual);
+      if (isNaN(b) || isNaN(a) || b === 0) {
+        return { text: 'N/A', className: '' };
       }
-      const diff = ((bidH - actualH) / bidH) * 100;
-      const sign = diff > 0 ? '+' : '';
-      return sign + diff.toFixed(2) + '%';
+      const diff = ((b - a) / b) * 100;
+      const txt = diff.toFixed(2) + '%';
+      if (diff > 0) {
+        return { text: '+' + txt, className: 'under-budget' };
+      } else if (diff < 0) {
+        return { text: txt, className: 'over-budget' };
+      }
+      return { text: '0.00%', className: '' };
     }
 
     // ======================
-    // UPDATE SUMMARY STATS
+    // UPDATE STATS
     // ======================
     function updateStats() {
       // Completed
-      const completedRows = document.querySelectorAll('#completedTable tbody tr');
-      document.getElementById('totalCompletedCount').innerText = completedRows.length;
+      const cRows = document.querySelectorAll('#completedTable tbody tr');
+      document.getElementById('totalCompletedCount').innerText = cRows.length;
 
-      let sumBidCompleted = 0, sumActualCompleted = 0;
-      completedRows.forEach(row => {
-        const bidHours = parseFloat(row.cells[3].innerText) || 0;
-        const actualHours = parseFloat(row.cells[4].innerText) || 0;
-        sumBidCompleted += bidHours;
-        sumActualCompleted += actualHours;
+      let sumBidCompleted = 0, sumActCompleted = 0;
+      cRows.forEach(row => {
+        const bidH = parseFloat(row.cells[3].innerText) || 0;
+        const actH = parseFloat(row.cells[4].innerText) || 0;
+        sumBidCompleted += bidH;
+        sumActCompleted += actH;
       });
 
       // Ongoing
-      const ongoingRows = document.querySelectorAll('#ongoingTable tbody tr');
+      const oRows = document.querySelectorAll('#ongoingTable tbody tr');
       let sumBidOngoing = 0, sumWorkedOngoing = 0;
-      ongoingRows.forEach(row => {
-        const bidHours = parseFloat(row.cells[3].innerText) || 0;
-        const workedHours = parseFloat(row.cells[4].innerText) || 0;
-        sumBidOngoing += bidHours;
-        sumWorkedOngoing += workedHours;
+      oRows.forEach(row => {
+        const bidH = parseFloat(row.cells[3].innerText) || 0;
+        const workedH = parseFloat(row.cells[4].innerText) || 0;
+        sumBidOngoing += bidH;
+        sumWorkedOngoing += workedH;
       });
 
       const totalBid = sumBidCompleted + sumBidOngoing;
-      const totalWorked = sumActualCompleted + sumWorkedOngoing;
+      const totalWorked = sumActCompleted + sumWorkedOngoing;
       document.getElementById('totalBidHours').innerText = totalBid.toFixed(2);
       document.getElementById('totalHoursWorked').innerText = totalWorked.toFixed(2);
 
       // Deficiencies
-      const deficiencyRows = document.querySelectorAll('#deficiencyTable tbody tr');
-      document.getElementById('defSiteCount').innerText = deficiencyRows.length;
-      document.getElementById('openFollowupCount').innerText = deficiencyRows.length;
+      const dRows = document.querySelectorAll('#deficiencyTable tbody tr');
+      document.getElementById('defSiteCount').innerText = dRows.length;
+      document.getElementById('openFollowupCount').innerText = dRows.length;
+
+      // Save data to localStorage
+      saveAllData();
     }
 
     // ======================
-    // DELETE Row (used by all tables)
+    // SET DATE RANGE
     // ======================
-    function deleteRow(btn) {
-      const row = btn.parentNode.parentNode;
-      row.parentNode.removeChild(row);
-      updateStats();
+    function updateDateRange(e) {
+      e.preventDefault();
+      const s = document.getElementById('startDate').value;
+      const en = document.getElementById('endDate').value;
+      document.getElementById('dateRangeDisplay').innerText =
+        `${formatDateString(s)} - ${formatDateString(en)}`;
+      saveAllData();
     }
 
     // ======================
-    // ADD Completed Inspection
-    // ======================
-    function addCompleted(event) {
-      event.preventDefault();
-      const projectNumber = document.getElementById('completedProjectNumber').value.trim();
-      const siteName = document.getElementById('completedSiteName').value.trim();
-      const dateCompleted = document.getElementById('completedDate').value;
-      const bidHours = document.getElementById('completedBidHours').value.trim();
-      const actualHours = document.getElementById('completedActualHours').value.trim();
-      const deficienciesFound = document.getElementById('completedDeficienciesFound').value.trim();
-      const notes = document.getElementById('completedNotes').value.trim();
-      const overUnder = calculateOverUnder(bidHours, actualHours);
-
-      const tableBody = document.querySelector('#completedTable tbody');
-      const newRow = tableBody.insertRow();
-
-      newRow.insertCell().innerText = projectNumber;
-      newRow.insertCell().innerText = siteName;
-
-      // <-- FIX HERE: Use our formatDateString
-      let dateCell = newRow.insertCell();
-      dateCell.innerText = formatDateString(dateCompleted);
-      dateCell.setAttribute('data-raw', dateCompleted);
-
-      newRow.insertCell().innerText = bidHours;
-      newRow.insertCell().innerText = actualHours;
-
-      let ouCell = newRow.insertCell();
-      ouCell.innerText = overUnder;
-      const numericOverUnder = parseFloat(overUnder);
-      if (!isNaN(numericOverUnder)) {
-        ouCell.style.color = numericOverUnder > 0 ? 'green' : (numericOverUnder < 0 ? 'red' : '');
-      }
-
-      newRow.insertCell().innerText = deficienciesFound;
-      newRow.insertCell().innerText = notes;
-
-      const actionCell = newRow.insertCell();
-      actionCell.innerHTML = '<button class="btn-secondary no-pdf" onclick="openEditCompleted(this)">Edit</button> <button class="btn-secondary no-pdf" onclick="deleteRow(this)">Delete</button>';
-
-      // Clear inputs
-      document.getElementById('completedProjectNumber').value = '';
-      document.getElementById('completedSiteName').value = '';
-      document.getElementById('completedDate').value = '';
-      document.getElementById('completedBidHours').value = '';
-      document.getElementById('completedActualHours').value = '';
-      document.getElementById('completedDeficienciesFound').value = '';
-      document.getElementById('completedNotes').value = '';
-      closeCompletedForm();
-      updateStats();
-    }
-
-    // ======================
-    // ADD Ongoing Inspection
-    // ======================
-    function addOngoing(event) {
-      event.preventDefault();
-      const projectNumber = document.getElementById('ongoingProjectNumber').value.trim();
-      const siteName = document.getElementById('ongoingSiteName').value.trim();
-      const startDate = document.getElementById('ongoingStartDate').value;
-      const bidHours = document.getElementById('ongoingBidHours').value.trim();
-      const hoursWorked = document.getElementById('ongoingHoursWorked').value.trim();
-      const estCompletion = document.getElementById('ongoingEstCompletion').value;
-      const notes = document.getElementById('ongoingNotes').value.trim();
-      const overUnder = calculateOverUnder(bidHours, hoursWorked);
-
-      const tableBody = document.querySelector('#ongoingTable tbody');
-      const newRow = tableBody.insertRow();
-
-      newRow.insertCell().innerText = projectNumber;
-      newRow.insertCell().innerText = siteName;
-
-      // <-- FIX HERE: Use our formatDateString
-      let startDateCell = newRow.insertCell();
-      startDateCell.innerText = formatDateString(startDate);
-      startDateCell.setAttribute('data-raw', startDate);
-
-      newRow.insertCell().innerText = bidHours;
-      newRow.insertCell().innerText = hoursWorked;
-
-      let ouCell2 = newRow.insertCell();
-      ouCell2.innerText = overUnder;
-      const numericOverUnder2 = parseFloat(overUnder);
-      if (!isNaN(numericOverUnder2)) {
-        ouCell2.style.color = numericOverUnder2 > 0 ? 'green' : (numericOverUnder2 < 0 ? 'red' : '');
-      }
-
-      let estCell = newRow.insertCell();
-      estCell.innerText = formatDateString(estCompletion);
-      estCell.setAttribute('data-raw', estCompletion);
-
-      newRow.insertCell().innerText = notes;
-
-      const actionCell2 = newRow.insertCell();
-      actionCell2.innerHTML = '<button class="btn-secondary no-pdf" onclick="openEditOngoing(this)">Edit</button> <button class="btn-secondary no-pdf" onclick="deleteRow(this)">Delete</button>';
-
-      // Clear inputs
-      document.getElementById('ongoingProjectNumber').value = '';
-      document.getElementById('ongoingSiteName').value = '';
-      document.getElementById('ongoingStartDate').value = '';
-      document.getElementById('ongoingBidHours').value = '';
-      document.getElementById('ongoingHoursWorked').value = '';
-      document.getElementById('ongoingEstCompletion').value = '';
-      document.getElementById('ongoingNotes').value = '';
-      closeOngoingForm();
-      updateStats();
-    }
-
-    // ======================
-    // ADD Deficiency / Follow-up
-    // ======================
-    function addDeficiency(event) {
-      event.preventDefault();
-      const siteName = document.getElementById('defSiteName').value.trim();
-      const isCritical = document.getElementById('defIsCritical').value;
-      const nextSteps = document.getElementById('defNextSteps').value.trim();
-      const followUpDate = document.getElementById('defFollowUpDate').value;
-      const assignedTo = document.getElementById('defAssignedTo').value.trim();
-
-      const tableBody = document.querySelector('#deficiencyTable tbody');
-      const newRow = tableBody.insertRow();
-
-      newRow.insertCell().innerText = siteName;
-      newRow.insertCell().innerText = isCritical;
-      newRow.insertCell().innerText = nextSteps;
-
-      let followUpCell = newRow.insertCell();
-      if (followUpDate) {
-        followUpCell.innerText = formatDateString(followUpDate); // <-- FIX HERE
-        followUpCell.setAttribute('data-raw', followUpDate);
-      }
-
-      newRow.insertCell().innerText = assignedTo;
-
-      const actionCell3 = newRow.insertCell();
-      actionCell3.innerHTML = '<button class="btn-secondary no-pdf" onclick="openEditDeficiency(this)">Edit</button> <button class="btn-secondary no-pdf" onclick="deleteRow(this)">Delete</button>';
-
-      // Clear inputs
-      document.getElementById('defSiteName').value = '';
-      document.getElementById('defIsCritical').value = 'Y';
-      document.getElementById('defNextSteps').value = '';
-      document.getElementById('defFollowUpDate').value = '';
-      document.getElementById('defAssignedTo').value = '';
-      closeDeficiencyForm();
-      updateStats();
-    }
-
-    // ======================
-    // Global variables for current edit rows
-    // ======================
-    let currentEditCompletedRow = null;
-    let currentEditOngoingRow = null;
-    let currentEditDeficiencyRow = null;
-
-    // ======================
-    // EDIT Completed Inspection functions
-    // ======================
-    function openEditCompleted(btn) {
-      const row = btn.parentNode.parentNode;
-      currentEditCompletedRow = row;
-      document.getElementById('editCompletedProjectNumber').value = row.cells[0].innerText;
-      document.getElementById('editCompletedSiteName').value = row.cells[1].innerText;
-
-      const dateCompleted = row.cells[2].getAttribute('data-raw') || row.cells[2].innerText;
-      document.getElementById('editCompletedDate').value = dateCompleted;
-
-      document.getElementById('editCompletedBidHours').value = row.cells[3].innerText;
-      document.getElementById('editCompletedActualHours').value = row.cells[4].innerText;
-      document.getElementById('editCompletedDeficienciesFound').value = row.cells[6].innerText;
-      document.getElementById('editCompletedNotes').value = row.cells[7].innerText;
-      document.getElementById('editCompletedModal').style.display = 'flex';
-      setTimeout(() => document.getElementById('editCompletedProjectNumber').focus(), 100);
-    }
-    function closeEditCompletedForm() {
-      document.getElementById('editCompletedModal').style.display = 'none';
-      currentEditCompletedRow = null;
-    }
-    function editCompleted(event) {
-      event.preventDefault();
-      if (!currentEditCompletedRow) return;
-
-      const projectNumber = document.getElementById('editCompletedProjectNumber').value.trim();
-      const siteName = document.getElementById('editCompletedSiteName').value.trim();
-      const dateCompleted = document.getElementById('editCompletedDate').value;
-      const bidHours = document.getElementById('editCompletedBidHours').value.trim();
-      const actualHours = document.getElementById('editCompletedActualHours').value.trim();
-      const deficienciesFound = document.getElementById('editCompletedDeficienciesFound').value.trim();
-      const notes = document.getElementById('editCompletedNotes').value.trim();
-      const overUnder = calculateOverUnder(bidHours, actualHours);
-
-      currentEditCompletedRow.cells[0].innerText = projectNumber;
-      currentEditCompletedRow.cells[1].innerText = siteName;
-      currentEditCompletedRow.cells[2].innerText = formatDateString(dateCompleted); // <-- Fix
-      currentEditCompletedRow.cells[2].setAttribute('data-raw', dateCompleted);
-
-      currentEditCompletedRow.cells[3].innerText = bidHours;
-      currentEditCompletedRow.cells[4].innerText = actualHours;
-      currentEditCompletedRow.cells[5].innerText = overUnder;
-
-      const numericOverUnder = parseFloat(overUnder);
-      if (!isNaN(numericOverUnder)) {
-        currentEditCompletedRow.cells[5].style.color = numericOverUnder > 0 ? 'green' : (numericOverUnder < 0 ? 'red' : '');
-      }
-
-      currentEditCompletedRow.cells[6].innerText = deficienciesFound;
-      currentEditCompletedRow.cells[7].innerText = notes;
-      closeEditCompletedForm();
-      updateStats();
-    }
-
-    // ======================
-    // EDIT Ongoing Inspection functions
-    // ======================
-    function openEditOngoing(btn) {
-      const row = btn.parentNode.parentNode;
-      currentEditOngoingRow = row;
-      document.getElementById('editOngoingProjectNumber').value = row.cells[0].innerText;
-      document.getElementById('editOngoingSiteName').value = row.cells[1].innerText;
-
-      const startDate = row.cells[2].getAttribute('data-raw') || row.cells[2].innerText;
-      document.getElementById('editOngoingStartDate').value = startDate;
-
-      document.getElementById('editOngoingBidHours').value = row.cells[3].innerText;
-      document.getElementById('editOngoingHoursWorked').value = row.cells[4].innerText;
-
-      const estCompletion = row.cells[6].getAttribute('data-raw') || row.cells[6].innerText;
-      document.getElementById('editOngoingEstCompletion').value = estCompletion;
-
-      document.getElementById('editOngoingNotes').value = row.cells[7].innerText;
-      document.getElementById('editOngoingModal').style.display = 'flex';
-      setTimeout(() => document.getElementById('editOngoingProjectNumber').focus(), 100);
-    }
-    function closeEditOngoingForm() {
-      document.getElementById('editOngoingModal').style.display = 'none';
-      currentEditOngoingRow = null;
-    }
-    function editOngoing(event) {
-      event.preventDefault();
-      if (!currentEditOngoingRow) return;
-
-      const projectNumber = document.getElementById('editOngoingProjectNumber').value.trim();
-      const siteName = document.getElementById('editOngoingSiteName').value.trim();
-      const startDate = document.getElementById('editOngoingStartDate').value;
-      const bidHours = document.getElementById('editOngoingBidHours').value.trim();
-      const hoursWorked = document.getElementById('editOngoingHoursWorked').value.trim();
-      const estCompletion = document.getElementById('editOngoingEstCompletion').value;
-      const notes = document.getElementById('editOngoingNotes').value.trim();
-      const overUnder = calculateOverUnder(bidHours, hoursWorked);
-
-      currentEditOngoingRow.cells[0].innerText = projectNumber;
-      currentEditOngoingRow.cells[1].innerText = siteName;
-      currentEditOngoingRow.cells[2].innerText = formatDateString(startDate);
-      currentEditOngoingRow.cells[2].setAttribute('data-raw', startDate);
-
-      currentEditOngoingRow.cells[3].innerText = bidHours;
-      currentEditOngoingRow.cells[4].innerText = hoursWorked;
-      currentEditOngoingRow.cells[5].innerText = overUnder;
-
-      const numericOverUnder = parseFloat(overUnder);
-      if (!isNaN(numericOverUnder)) {
-        currentEditOngoingRow.cells[5].style.color = numericOverUnder > 0 ? 'green' : (numericOverUnder < 0 ? 'red' : '');
-      }
-
-      currentEditOngoingRow.cells[6].innerText = formatDateString(estCompletion);
-      currentEditOngoingRow.cells[6].setAttribute('data-raw', estCompletion);
-      currentEditOngoingRow.cells[7].innerText = notes;
-      closeEditOngoingForm();
-      updateStats();
-    }
-
-    // ======================
-    // EDIT Deficiency / Follow-up functions
-    // ======================
-    function openEditDeficiency(btn) {
-      const row = btn.parentNode.parentNode;
-      currentEditDeficiencyRow = row;
-      document.getElementById('editDefSiteName').value = row.cells[0].innerText;
-      document.getElementById('editDefIsCritical').value = row.cells[1].innerText;
-      document.getElementById('editDefNextSteps').value = row.cells[2].innerText;
-
-      const followUpDate = row.cells[3].getAttribute('data-raw') || row.cells[3].innerText;
-      document.getElementById('editDefFollowUpDate').value = followUpDate;
-
-      document.getElementById('editDefAssignedTo').value = row.cells[4].innerText;
-      document.getElementById('editDeficiencyModal').style.display = 'flex';
-      setTimeout(() => document.getElementById('editDefSiteName').focus(), 100);
-    }
-    function closeEditDeficiencyForm() {
-      document.getElementById('editDeficiencyModal').style.display = 'none';
-      currentEditDeficiencyRow = null;
-    }
-    function editDeficiency(event) {
-      event.preventDefault();
-      if (!currentEditDeficiencyRow) return;
-
-      const siteName = document.getElementById('editDefSiteName').value.trim();
-      const isCritical = document.getElementById('editDefIsCritical').value;
-      const nextSteps = document.getElementById('editDefNextSteps').value.trim();
-      const followUpDate = document.getElementById('editDefFollowUpDate').value;
-      const assignedTo = document.getElementById('editDefAssignedTo').value.trim();
-
-      currentEditDeficiencyRow.cells[0].innerText = siteName;
-      currentEditDeficiencyRow.cells[1].innerText = isCritical;
-      currentEditDeficiencyRow.cells[2].innerText = nextSteps;
-
-      if (followUpDate) {
-        currentEditDeficiencyRow.cells[3].innerText = formatDateString(followUpDate);
-        currentEditDeficiencyRow.cells[3].setAttribute('data-raw', followUpDate);
-      } else {
-        currentEditDeficiencyRow.cells[3].innerText = '';
-        currentEditDeficiencyRow.cells[3].removeAttribute('data-raw');
-      }
-
-      currentEditDeficiencyRow.cells[4].innerText = assignedTo;
-      closeEditDeficiencyForm();
-      updateStats();
-    }
-
-    // ======================
-    // CLEAR ALL DATA (from all tables)
+    // CLEAR ALL
     // ======================
     function clearAllData() {
-      if (confirm("Are you sure you want to clear all entries?")) {
-        document.querySelector('#completedTable tbody').innerHTML = '';
-        document.querySelector('#ongoingTable tbody').innerHTML = '';
-        document.querySelector('#deficiencyTable tbody').innerHTML = '';
-        updateStats();
-      }
+      if (!confirm("Are you sure you want to clear all entries?")) return;
+      document.querySelector('#completedTable tbody').innerHTML = '';
+      document.querySelector('#ongoingTable tbody').innerHTML = '';
+      document.querySelector('#deficiencyTable tbody').innerHTML = '';
+
+      document.getElementById('startDate').value = '';
+      document.getElementById('endDate').value = '';
+      document.getElementById('dateRangeDisplay').innerText = '[mm/dd/yyyy - mm/dd/yyyy]';
+
+      document.getElementById('trendsNoticed').value = '';
+      document.getElementById('resourceChallenges').value = '';
+      document.getElementById('suggestedImprovements').value = '';
+
+      updateStats();
+      localStorage.clear();
     }
 
     // ======================
     // DOWNLOAD PDF
-    // Before capturing, hide all buttons with the "no-pdf" class,
-    // then restore them after generating the PDF.
     // ======================
     async function downloadPDF() {
-      // Hide all action buttons
-      const noPdfElements = document.querySelectorAll('.no-pdf');
-      noPdfElements.forEach(el => { el.style.display = 'none'; });
+      // Hide .no-pdf
+      const noPdfEls = document.querySelectorAll('.no-pdf');
+      noPdfEls.forEach(el => el.style.display = 'none');
 
-      const pdfElement = document.getElementById('pdfContainer');
-      const canvas = await html2canvas(pdfElement, { scale: 2 });
+      const pdfEl = document.getElementById('pdfContainer');
+      const canvas = await html2canvas(pdfEl, {
+        scale: 1,
+        backgroundColor: '#ffffff'
+      });
       const imgData = canvas.toDataURL('image/png');
       const { jsPDF } = window.jspdf;
+
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth  = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
 
-      const canvasWidth  = canvas.width;
-      const canvasHeight = canvas.height;
-      const ratio = canvasHeight / canvasWidth;
+      const cWidth  = canvas.width;
+      const cHeight = canvas.height;
+      const ratio = cHeight / cWidth;
       const pdfImgWidth = pageWidth - 10;
       const pdfImgHeight = pdfImgWidth * ratio;
+
       let heightLeft = pdfImgHeight;
       let position = 10;
 
@@ -977,19 +798,581 @@
       while (heightLeft > 0) {
         pdf.addPage();
         position = 10;
-        pdf.addImage(imgData, 'PNG', 5, position - (pdfImgHeight - heightLeft), pdfImgWidth, pdfImgHeight, null, 'FAST');
+        pdf.addImage(
+          imgData, 'PNG',
+          5,
+          position - (pdfImgHeight - heightLeft),
+          pdfImgWidth,
+          pdfImgHeight,
+          null,
+          'FAST'
+        );
         heightLeft -= (pageHeight - 20);
       }
-      pdf.save("WeeklyReport.pdf");
 
-      // Restore the action buttons
-      noPdfElements.forEach(el => { el.style.display = ''; });
+      pdf.save("WeeklyReport.pdf");
+      // Restore .no-pdf
+      noPdfEls.forEach(el => el.style.display = '');
+    }
+
+    // ======================
+    // MODALS: Show & Close
+    // ======================
+    function showCompletedForm() {
+      const modal = document.getElementById('completedModal');
+      modal.classList.add('show');
+      setTimeout(() => document.getElementById('completedProjectNumber').focus(), 150);
+    }
+    function closeCompletedForm() {
+      const modal = document.getElementById('completedModal');
+      modal.classList.remove('show');
+      document.querySelector('#completedModal form').reset();
+    }
+    function showOngoingForm() {
+      const modal = document.getElementById('ongoingModal');
+      modal.classList.add('show');
+      setTimeout(() => document.getElementById('ongoingProjectNumber').focus(), 150);
+    }
+    function closeOngoingForm() {
+      const modal = document.getElementById('ongoingModal');
+      modal.classList.remove('show');
+      document.querySelector('#ongoingModal form').reset();
+    }
+    function showDeficiencyForm() {
+      const modal = document.getElementById('deficiencyModal');
+      modal.classList.add('show');
+      setTimeout(() => document.getElementById('defSiteName').focus(), 150);
+    }
+    function closeDeficiencyForm() {
+      const modal = document.getElementById('deficiencyModal');
+      modal.classList.remove('show');
+      document.querySelector('#deficiencyModal form').reset();
+    }
+    function outsideClickClose(e, modalId) {
+      if (e.target.id === modalId) {
+        document.getElementById(modalId).classList.remove('show');
+      }
+    }
+
+    // Edit modals
+    let currentEditCompletedRow = null;
+    function openEditCompleted(btn) {
+      let row = btn.parentNode.parentNode;
+      currentEditCompletedRow = row;
+      const r = row.cells;
+
+      document.getElementById('editCompletedProjectNumber').value = r[0].innerText;
+      document.getElementById('editCompletedSiteName').value = r[1].innerText;
+      document.getElementById('editCompletedDate').value = r[2].getAttribute('data-raw') || '';
+      document.getElementById('editCompletedBidHours').value = r[3].innerText;
+      document.getElementById('editCompletedActualHours').value = r[4].innerText;
+      document.getElementById('editCompletedDeficienciesFound').value = r[6].innerText;
+      document.getElementById('editCompletedNotes').value = r[7].innerText;
+
+      document.getElementById('editCompletedModal').classList.add('show');
+      setTimeout(() => document.getElementById('editCompletedProjectNumber').focus(), 150);
+    }
+    function closeEditCompletedForm() {
+      const modal = document.getElementById('editCompletedModal');
+      modal.classList.remove('show');
+      currentEditCompletedRow = null;
+      document.querySelector('#editCompletedModal form').reset();
+    }
+
+    let currentEditOngoingRow = null;
+    function openEditOngoing(btn) {
+      let row = btn.parentNode.parentNode;
+      currentEditOngoingRow = row;
+      const r = row.cells;
+
+      document.getElementById('editOngoingProjectNumber').value = r[0].innerText;
+      document.getElementById('editOngoingSiteName').value = r[1].innerText;
+      document.getElementById('editOngoingStartDate').value = r[2].getAttribute('data-raw') || '';
+      document.getElementById('editOngoingBidHours').value = r[3].innerText;
+      document.getElementById('editOngoingHoursWorked').value = r[4].innerText;
+      document.getElementById('editOngoingEstCompletion').value = r[6].getAttribute('data-raw') || '';
+      document.getElementById('editOngoingNotes').value = r[7].innerText;
+
+      document.getElementById('editOngoingModal').classList.add('show');
+      setTimeout(() => document.getElementById('editOngoingProjectNumber').focus(), 150);
+    }
+    function closeEditOngoingForm() {
+      const modal = document.getElementById('editOngoingModal');
+      modal.classList.remove('show');
+      currentEditOngoingRow = null;
+      document.querySelector('#editOngoingModal form').reset();
+    }
+
+    let currentEditDeficiencyRow = null;
+    function openEditDeficiency(btn) {
+      let row = btn.parentNode.parentNode;
+      currentEditDeficiencyRow = row;
+      const r = row.cells;
+
+      document.getElementById('editDefSiteName').value = r[0].innerText;
+      document.getElementById('editDefIsCritical').value = r[1].innerText;
+      document.getElementById('editDefNextSteps').value = r[2].innerText;
+      document.getElementById('editDefFollowUpDate').value = r[3].getAttribute('data-raw') || '';
+      document.getElementById('editDefAssignedTo').value = r[4].innerText;
+
+      document.getElementById('editDeficiencyModal').classList.add('show');
+      setTimeout(() => document.getElementById('editDefSiteName').focus(), 150);
+    }
+    function closeEditDeficiencyForm() {
+      const modal = document.getElementById('editDeficiencyModal');
+      modal.classList.remove('show');
+      currentEditDeficiencyRow = null;
+      document.querySelector('#editDeficiencyModal form').reset();
+    }
+
+    // ======================
+    // DELETE ROW
+    // ======================
+    function deleteRow(btn) {
+      const row = btn.parentNode.parentNode;
+      row.remove();
+      updateStats();
+    }
+
+    // ======================
+    // ADD: Completed
+    // ======================
+    function addCompleted(e) {
+      e.preventDefault();
+      const pn = document.getElementById('completedProjectNumber').value.trim();
+      const sn = document.getElementById('completedSiteName').value.trim();
+      const dt = document.getElementById('completedDate').value;
+      const bh = document.getElementById('completedBidHours').value.trim();
+      const ah = document.getElementById('completedActualHours').value.trim();
+      const df = document.getElementById('completedDeficienciesFound').value.trim();
+      const notes = document.getElementById('completedNotes').value.trim();
+
+      const tbody = document.querySelector('#completedTable tbody');
+      const row = tbody.insertRow();
+
+      row.insertCell().innerText = pn;
+      row.insertCell().innerText = sn;
+
+      let dateC = row.insertCell();
+      dateC.innerText = formatDateString(dt);
+      dateC.setAttribute('data-raw', dt);
+
+      row.insertCell().innerText = bh;
+      row.insertCell().innerText = ah;
+
+      const overUnder = calculateOverUnder(bh, ah);
+      let ouCell = row.insertCell();
+      ouCell.innerText = overUnder.text;
+      if (overUnder.className) ouCell.classList.add(overUnder.className);
+
+      row.insertCell().innerText = df;
+      row.insertCell().innerText = notes;
+
+      const actionsCell = row.insertCell();
+      actionsCell.classList.add('no-pdf');
+      actionsCell.innerHTML = `
+        <button class="btn-secondary" onclick="openEditCompleted(this)">Edit</button>
+        <button class="btn-secondary" onclick="deleteRow(this)">Delete</button>
+      `;
+
+      closeCompletedForm();
+      updateStats();
+    }
+
+    // ======================
+    // ADD: Ongoing
+    // ======================
+    function addOngoing(e) {
+      e.preventDefault();
+      const pn = document.getElementById('ongoingProjectNumber').value.trim();
+      const sn = document.getElementById('ongoingSiteName').value.trim();
+      const startD = document.getElementById('ongoingStartDate').value;
+      const bh = document.getElementById('ongoingBidHours').value.trim();
+      const hw = document.getElementById('ongoingHoursWorked').value.trim();
+      const estC = document.getElementById('ongoingEstCompletion').value;
+      const notes = document.getElementById('ongoingNotes').value.trim();
+
+      const tbody = document.querySelector('#ongoingTable tbody');
+      const row = tbody.insertRow();
+
+      row.insertCell().innerText = pn;
+      row.insertCell().innerText = sn;
+
+      let sdCell = row.insertCell();
+      sdCell.innerText = formatDateString(startD);
+      sdCell.setAttribute('data-raw', startD);
+
+      row.insertCell().innerText = bh;
+      row.insertCell().innerText = hw;
+
+      const overUnder = calculateOverUnder(bh, hw);
+      let ouCell = row.insertCell();
+      ouCell.innerText = overUnder.text;
+      if (overUnder.className) ouCell.classList.add(overUnder.className);
+
+      let estCell = row.insertCell();
+      estCell.innerText = formatDateString(estC);
+      estCell.setAttribute('data-raw', estC);
+
+      row.insertCell().innerText = notes;
+
+      const actionsCell = row.insertCell();
+      actionsCell.classList.add('no-pdf');
+      actionsCell.innerHTML = `
+        <button class="btn-secondary" onclick="openEditOngoing(this)">Edit</button>
+        <button class="btn-secondary" onclick="deleteRow(this)">Delete</button>
+      `;
+
+      closeOngoingForm();
+      updateStats();
+    }
+
+    // ======================
+    // ADD: Deficiency
+    // ======================
+    function addDeficiency(e) {
+      e.preventDefault();
+      const sn = document.getElementById('defSiteName').value.trim();
+      const crit = document.getElementById('defIsCritical').value;
+      const nxt = document.getElementById('defNextSteps').value.trim();
+      const fud = document.getElementById('defFollowUpDate').value;
+      const assigned = document.getElementById('defAssignedTo').value.trim();
+
+      const tbody = document.querySelector('#deficiencyTable tbody');
+      const row = tbody.insertRow();
+
+      if (crit === "Y") {
+        row.classList.add('critical-def');
+      }
+      row.insertCell().innerText = sn;
+      row.insertCell().innerText = crit;
+      row.insertCell().innerText = nxt;
+
+      let followUpCell = row.insertCell();
+      followUpCell.innerText = fud ? formatDateString(fud) : "";
+      if (fud) followUpCell.setAttribute('data-raw', fud);
+
+      row.insertCell().innerText = assigned;
+
+      const actionsCell = row.insertCell();
+      actionsCell.classList.add('no-pdf');
+      actionsCell.innerHTML = `
+        <button class="btn-secondary" onclick="openEditDeficiency(this)">Edit</button>
+        <button class="btn-secondary" onclick="deleteRow(this)">Delete</button>
+      `;
+
+      closeDeficiencyForm();
+      updateStats();
+    }
+
+    // ======================
+    // EDIT Completed
+    // ======================
+    function editCompleted(e) {
+      e.preventDefault();
+      if (!currentEditCompletedRow) return;
+      const r = currentEditCompletedRow.cells;
+
+      const pNum = document.getElementById('editCompletedProjectNumber').value.trim();
+      const sName = document.getElementById('editCompletedSiteName').value.trim();
+      const dt = document.getElementById('editCompletedDate').value;
+      const bH = document.getElementById('editCompletedBidHours').value.trim();
+      const aH = document.getElementById('editCompletedActualHours').value.trim();
+      const def = document.getElementById('editCompletedDeficienciesFound').value.trim();
+      const nts = document.getElementById('editCompletedNotes').value.trim();
+
+      r[0].innerText = pNum;
+      r[1].innerText = sName;
+      r[2].innerText = formatDateString(dt);
+      r[2].setAttribute('data-raw', dt);
+
+      r[3].innerText = bH;
+      r[4].innerText = aH;
+
+      const overUnder = calculateOverUnder(bH, aH);
+      r[5].innerText = overUnder.text;
+      r[5].className = '';
+      if (overUnder.className) r[5].classList.add(overUnder.className);
+
+      r[6].innerText = def;
+      r[7].innerText = nts;
+
+      closeEditCompletedForm();
+      updateStats();
+    }
+
+    // ======================
+    // EDIT Ongoing
+    // ======================
+    function editOngoing(e) {
+      e.preventDefault();
+      if (!currentEditOngoingRow) return;
+      const r = currentEditOngoingRow.cells;
+
+      const pN = document.getElementById('editOngoingProjectNumber').value.trim();
+      const sN = document.getElementById('editOngoingSiteName').value.trim();
+      const sd = document.getElementById('editOngoingStartDate').value;
+      const bH = document.getElementById('editOngoingBidHours').value.trim();
+      const wH = document.getElementById('editOngoingHoursWorked').value.trim();
+      const eC = document.getElementById('editOngoingEstCompletion').value;
+      const nt = document.getElementById('editOngoingNotes').value.trim();
+
+      r[0].innerText = pN;
+      r[1].innerText = sN;
+      r[2].innerText = formatDateString(sd);
+      r[2].setAttribute('data-raw', sd);
+
+      r[3].innerText = bH;
+      r[4].innerText = wH;
+
+      const overUnder = calculateOverUnder(bH, wH);
+      r[5].innerText = overUnder.text;
+      r[5].className = '';
+      if (overUnder.className) r[5].classList.add(overUnder.className);
+
+      r[6].innerText = formatDateString(eC);
+      r[6].setAttribute('data-raw', eC);
+      r[7].innerText = nt;
+
+      closeEditOngoingForm();
+      updateStats();
+    }
+
+    // ======================
+    // EDIT Deficiency
+    // ======================
+    function editDeficiency(e) {
+      e.preventDefault();
+      if (!currentEditDeficiencyRow) return;
+      const r = currentEditDeficiencyRow.cells;
+
+      const siteN = document.getElementById('editDefSiteName').value.trim();
+      const crit = document.getElementById('editDefIsCritical').value;
+      const nxt = document.getElementById('editDefNextSteps').value.trim();
+      const fDate = document.getElementById('editDefFollowUpDate').value;
+      const assign = document.getElementById('editDefAssignedTo').value.trim();
+
+      r[0].innerText = siteN;
+      r[1].innerText = crit;
+      r[2].innerText = nxt;
+
+      if (fDate) {
+        r[3].innerText = formatDateString(fDate);
+        r[3].setAttribute('data-raw', fDate);
+      } else {
+        r[3].innerText = '';
+        r[3].removeAttribute('data-raw');
+      }
+      r[4].innerText = assign;
+
+      currentEditDeficiencyRow.classList.remove('critical-def');
+      if (crit === "Y") {
+        currentEditDeficiencyRow.classList.add('critical-def');
+      }
+
+      closeEditDeficiencyForm();
+      updateStats();
+    }
+
+    // ======================
+    // LOCAL STORAGE: SAVE & LOAD
+    // ======================
+    function saveAllData() {
+      // Completed
+      const completedRows = Array.from(document.querySelectorAll('#completedTable tbody tr')).map(row => {
+        let cells = row.cells;
+        return {
+          projectNumber: cells[0].innerText,
+          siteName: cells[1].innerText,
+          dateRaw: cells[2].getAttribute('data-raw'),
+          bidHours: cells[3].innerText,
+          actualHours: cells[4].innerText,
+          overUnder: cells[5].innerText, // display only
+          deficiencies: cells[6].innerText,
+          notes: cells[7].innerText
+        };
+      });
+      localStorage.setItem(LS_COMPLETED_KEY, JSON.stringify(completedRows));
+
+      // Ongoing
+      const ongoingRows = Array.from(document.querySelectorAll('#ongoingTable tbody tr')).map(row => {
+        let cells = row.cells;
+        return {
+          projectNumber: cells[0].innerText,
+          siteName: cells[1].innerText,
+          startDateRaw: cells[2].getAttribute('data-raw'),
+          bidHours: cells[3].innerText,
+          hoursWorked: cells[4].innerText,
+          overUnder: cells[5].innerText, // display only
+          estCompletionRaw: cells[6].getAttribute('data-raw'),
+          notes: cells[7].innerText
+        };
+      });
+      localStorage.setItem(LS_ONGOING_KEY, JSON.stringify(ongoingRows));
+
+      // Deficiencies
+      const defRows = Array.from(document.querySelectorAll('#deficiencyTable tbody tr')).map(row => {
+        let cells = row.cells;
+        return {
+          siteName: cells[0].innerText,
+          isCritical: cells[1].innerText,
+          nextSteps: cells[2].innerText,
+          followUpRaw: cells[3].getAttribute('data-raw') || '',
+          assignedTo: cells[4].innerText
+        };
+      });
+      localStorage.setItem(LS_DEFICIENCIES_KEY, JSON.stringify(defRows));
+
+      // Observations
+      const notesData = {
+        trendsNoticed: document.getElementById('trendsNoticed').value,
+        resourceChallenges: document.getElementById('resourceChallenges').value,
+        suggestedImprovements: document.getElementById('suggestedImprovements').value
+      };
+      localStorage.setItem(LS_NOTES_KEY, JSON.stringify(notesData));
+
+      // Date range
+      const drData = {
+        startDate: document.getElementById('startDate').value,
+        endDate: document.getElementById('endDate').value
+      };
+      localStorage.setItem(LS_DATE_RANGE_KEY, JSON.stringify(drData));
+    }
+
+    function loadAllData() {
+      // Completed
+      const completedJSON = localStorage.getItem(LS_COMPLETED_KEY);
+      if (completedJSON) {
+        const rows = JSON.parse(completedJSON);
+        const tbody = document.querySelector('#completedTable tbody');
+        tbody.innerHTML = '';
+        rows.forEach(item => {
+          const row = tbody.insertRow();
+          row.insertCell().innerText = item.projectNumber;
+          row.insertCell().innerText = item.siteName;
+
+          let dateC = row.insertCell();
+          dateC.innerText = formatDateString(item.dateRaw);
+          dateC.setAttribute('data-raw', item.dateRaw);
+
+          row.insertCell().innerText = item.bidHours;
+          row.insertCell().innerText = item.actualHours;
+
+          let overUnder = calculateOverUnder(item.bidHours, item.actualHours);
+          let ouCell = row.insertCell();
+          ouCell.innerText = overUnder.text;
+          if (overUnder.className) ouCell.classList.add(overUnder.className);
+
+          row.insertCell().innerText = item.deficiencies;
+          row.insertCell().innerText = item.notes;
+
+          const actionsCell = row.insertCell();
+          actionsCell.classList.add('no-pdf');
+          actionsCell.innerHTML = `
+            <button class="btn-secondary" onclick="openEditCompleted(this)">Edit</button>
+            <button class="btn-secondary" onclick="deleteRow(this)">Delete</button>
+          `;
+        });
+      }
+
+      // Ongoing
+      const ongoingJSON = localStorage.getItem(LS_ONGOING_KEY);
+      if (ongoingJSON) {
+        const rows = JSON.parse(ongoingJSON);
+        const tbody = document.querySelector('#ongoingTable tbody');
+        tbody.innerHTML = '';
+        rows.forEach(item => {
+          const row = tbody.insertRow();
+          row.insertCell().innerText = item.projectNumber;
+          row.insertCell().innerText = item.siteName;
+
+          let sdCell = row.insertCell();
+          sdCell.innerText = formatDateString(item.startDateRaw);
+          sdCell.setAttribute('data-raw', item.startDateRaw);
+
+          row.insertCell().innerText = item.bidHours;
+          row.insertCell().innerText = item.hoursWorked;
+
+          let overUnder = calculateOverUnder(item.bidHours, item.hoursWorked);
+          let ouCell = row.insertCell();
+          ouCell.innerText = overUnder.text;
+          if (overUnder.className) ouCell.classList.add(overUnder.className);
+
+          let estCell = row.insertCell();
+          estCell.innerText = formatDateString(item.estCompletionRaw);
+          estCell.setAttribute('data-raw', item.estCompletionRaw);
+
+          row.insertCell().innerText = item.notes;
+
+          const actionsCell = row.insertCell();
+          actionsCell.classList.add('no-pdf');
+          actionsCell.innerHTML = `
+            <button class="btn-secondary" onclick="openEditOngoing(this)">Edit</button>
+            <button class="btn-secondary" onclick="deleteRow(this)">Delete</button>
+          `;
+        });
+      }
+
+      // Deficiencies
+      const defJSON = localStorage.getItem(LS_DEFICIENCIES_KEY);
+      if (defJSON) {
+        const rows = JSON.parse(defJSON);
+        const tbody = document.querySelector('#deficiencyTable tbody');
+        tbody.innerHTML = '';
+        rows.forEach(item => {
+          const row = tbody.insertRow();
+          if (item.isCritical === "Y") {
+            row.classList.add('critical-def');
+          }
+          row.insertCell().innerText = item.siteName;
+          row.insertCell().innerText = item.isCritical;
+          row.insertCell().innerText = item.nextSteps;
+
+          let followUpCell = row.insertCell();
+          followUpCell.innerText = item.followUpRaw ? formatDateString(item.followUpRaw) : '';
+          if (item.followUpRaw) followUpCell.setAttribute('data-raw', item.followUpRaw);
+
+          row.insertCell().innerText = item.assignedTo;
+
+          const actionsCell = row.insertCell();
+          actionsCell.classList.add('no-pdf');
+          actionsCell.innerHTML = `
+            <button class="btn-secondary" onclick="openEditDeficiency(this)">Edit</button>
+            <button class="btn-secondary" onclick="deleteRow(this)">Delete</button>
+          `;
+        });
+      }
+
+      // Observations
+      const notesJSON = localStorage.getItem(LS_NOTES_KEY);
+      if (notesJSON) {
+        const n = JSON.parse(notesJSON);
+        document.getElementById('trendsNoticed').value = n.trendsNoticed || '';
+        document.getElementById('resourceChallenges').value = n.resourceChallenges || '';
+        document.getElementById('suggestedImprovements').value = n.suggestedImprovements || '';
+      }
+
+      // Date range
+      const drJSON = localStorage.getItem(LS_DATE_RANGE_KEY);
+      if (drJSON) {
+        const dr = JSON.parse(drJSON);
+        document.getElementById('startDate').value = dr.startDate || '';
+        document.getElementById('endDate').value = dr.endDate || '';
+        if (dr.startDate && dr.endDate) {
+          document.getElementById('dateRangeDisplay').innerText = 
+            `${formatDateString(dr.startDate)} - ${formatDateString(dr.endDate)}`;
+        }
+      }
+
+      updateStats(); // to recalc Over/Under classes, etc.
     }
 
     // ======================
     // INIT
     // ======================
-    window.onload = function() { updateStats(); };
+    window.onload = function() {
+      loadAllData();
+    };
   </script>
 
 </body>
