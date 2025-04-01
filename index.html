@@ -18,7 +18,7 @@
     body {
       font-family: "Helvetica Neue", Arial, sans-serif;
       color: #333;
-      background-color: #fff; /* Clean white background for a professional PDF */
+      background-color: #fff;
       margin: 20px;
     }
 
@@ -32,13 +32,19 @@
     }
 
     /* ===== PAGE BREAK RULES (for PDF generation) ===== */
-    /* Avoid breaking important blocks */
     #pdfContainer h1,
     #pdfContainer h2,
     #pdfContainer p,
     #pdfContainer table,
     #pdfContainer .observations-section {
       page-break-inside: avoid;
+    }
+
+    /* ===== NOTES CELLS: Allow wrapping without fixed max-width ===== */
+    td.notes, th.notes {
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
 
     /* ========== BUTTONS ========== */
@@ -172,7 +178,6 @@
       overflow-y: auto;
       position: relative;
       animation: slideDown 0.3s;
-      /* Accessibility: ARIA attributes and focus handling */
     }
     .modal-content:focus { outline: none; }
     @keyframes slideDown { from { transform: translateY(-15px); } to { transform: translateY(0); } }
@@ -215,7 +220,6 @@
       white-space: pre-wrap;
       word-wrap: break-word;
     }
-    /* (In PDF mode these textareas are temporarily replaced with divs.) */
 
     /* ========== HIDE .no-pdf FOR PRINT ========== */
     @media print {
@@ -316,6 +320,17 @@
     <section>
       <h2>Completed Inspections</h2>
       <table id="completedTable">
+        <colgroup>
+          <col style="width:10%;">
+          <col style="width:15%;">
+          <col style="width:12%;">
+          <col style="width:8%;">
+          <col style="width:8%;">
+          <col style="width:8%;">
+          <col style="width:7%;">
+          <col style="width:25%;" class="notes">
+          <col style="width:7%;">
+        </colgroup>
         <thead>
           <tr>
             <th>Project #</th>
@@ -325,7 +340,7 @@
             <th>Actual Hours</th>
             <th>Over/Under %</th>
             <th>Deficiencies (#)</th>
-            <th>Notes</th>
+            <th class="notes">Notes</th>
             <th class="no-pdf">Actions</th>
           </tr>
         </thead>
@@ -337,6 +352,17 @@
     <section>
       <h2>Ongoing / In-Progress Inspections</h2>
       <table id="ongoingTable">
+        <colgroup>
+          <col style="width:10%;">
+          <col style="width:15%;">
+          <col style="width:12%;">
+          <col style="width:8%;">
+          <col style="width:8%;">
+          <col style="width:8%;">
+          <col style="width:12%;">
+          <col style="width:20%;" class="notes">
+          <col style="width:7%;">
+        </colgroup>
         <thead>
           <tr>
             <th>Project #</th>
@@ -346,7 +372,7 @@
             <th>Hours Worked</th>
             <th>Over/Under %</th>
             <th>Est. Completion</th>
-            <th>Notes</th>
+            <th class="notes">Notes</th>
             <th class="no-pdf">Actions</th>
           </tr>
         </thead>
@@ -670,7 +696,6 @@
     // UPDATE STATS & SAVE DATA
     // ======================
     function updateStats() {
-      // Completed inspections
       const cRows = document.querySelectorAll('#completedTable tbody tr');
       document.getElementById('totalCompletedCount').innerText = cRows.length;
       let sumBidCompleted = 0, sumActCompleted = 0;
@@ -680,7 +705,6 @@
         sumBidCompleted += bidH;
         sumActCompleted += actH;
       });
-      // Ongoing inspections
       const oRows = document.querySelectorAll('#ongoingTable tbody tr');
       let sumBidOngoing = 0, sumWorkedOngoing = 0;
       oRows.forEach(row => {
@@ -693,7 +717,6 @@
       const totalWorked = sumActCompleted + sumWorkedOngoing;
       document.getElementById('totalBidHours').innerText = totalBid.toFixed(2);
       document.getElementById('totalHoursWorked').innerText = totalWorked.toFixed(2);
-      // Deficiencies
       const dRows = document.querySelectorAll('#deficiencyTable tbody tr');
       document.getElementById('defSiteCount').innerText = dRows.length;
       document.getElementById('openFollowupCount').innerText = dRows.length;
@@ -734,9 +757,7 @@
     // DOWNLOAD PDF USING html2pdf.js (handles page-breaks)
     // ======================
     async function downloadPDF() {
-      // Hide non-PDF elements
       document.querySelectorAll('.no-pdf').forEach(el => el.style.display = 'none');
-      
       const pdfContainer = document.getElementById('pdfContainer');
       const opt = {
         margin: 10,
@@ -744,13 +765,9 @@
         image: { type: 'png', quality: 1 },
         html2canvas: { scale: window.devicePixelRatio || 2, backgroundColor: '#ffffff' },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        // Using pagebreak mode to avoid splitting inside elements that have CSS page-break rules
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
-      
       await html2pdf().set(opt).from(pdfContainer).save();
-      
-      // Restore non-PDF elements
       document.querySelectorAll('.no-pdf').forEach(el => el.style.display = '');
     }
 
@@ -773,7 +790,6 @@
         closeModal(modalId);
       }
     }
-    // Close modals with Escape key
     document.addEventListener('keydown', function(e) {
       if (e.key === "Escape") {
         document.querySelectorAll('.modal.show').forEach(modal => modal.classList.remove('show'));
@@ -858,7 +874,9 @@
       ouCell.innerText = overUnder.text;
       if (overUnder.className) ouCell.classList.add(overUnder.className);
       row.insertCell().innerText = df;
-      row.insertCell().innerText = notes;
+      let notesCell = row.insertCell();
+      notesCell.innerText = notes;
+      notesCell.classList.add('notes');
       const actionsCell = row.insertCell();
       actionsCell.classList.add('no-pdf');
       actionsCell.innerHTML = `
@@ -897,7 +915,9 @@
       let estCell = row.insertCell();
       estCell.innerText = formatDateString(estC);
       estCell.setAttribute('data-raw', estC);
-      row.insertCell().innerText = notes;
+      let notesCell = row.insertCell();
+      notesCell.innerText = notes;
+      notesCell.classList.add('notes');
       const actionsCell = row.insertCell();
       actionsCell.classList.add('no-pdf');
       actionsCell.innerHTML = `
@@ -964,6 +984,7 @@
       if (overUnder.className) r[5].classList.add(overUnder.className);
       r[6].innerText = def;
       r[7].innerText = nts;
+      r[7].classList.add('notes');
       closeModal('editCompletedModal');
       updateStats();
     }
@@ -995,6 +1016,7 @@
       r[6].innerText = formatDateString(eC);
       r[6].setAttribute('data-raw', eC);
       r[7].innerText = nt;
+      r[7].classList.add('notes');
       closeModal('editOngoingModal');
       updateStats();
     }
@@ -1034,7 +1056,6 @@
     // LOCAL STORAGE: SAVE & LOAD
     // ======================
     function saveAllData() {
-      // Completed
       const completedRows = Array.from(document.querySelectorAll('#completedTable tbody tr')).map(row => {
         let cells = row.cells;
         return {
@@ -1049,8 +1070,6 @@
         };
       });
       localStorage.setItem(LS_COMPLETED_KEY, JSON.stringify(completedRows));
-
-      // Ongoing
       const ongoingRows = Array.from(document.querySelectorAll('#ongoingTable tbody tr')).map(row => {
         let cells = row.cells;
         return {
@@ -1065,8 +1084,6 @@
         };
       });
       localStorage.setItem(LS_ONGOING_KEY, JSON.stringify(ongoingRows));
-
-      // Deficiencies
       const defRows = Array.from(document.querySelectorAll('#deficiencyTable tbody tr')).map(row => {
         let cells = row.cells;
         return {
@@ -1078,16 +1095,12 @@
         };
       });
       localStorage.setItem(LS_DEFICIENCIES_KEY, JSON.stringify(defRows));
-
-      // Observations
       const notesData = {
         trendsNoticed: document.getElementById('trendsNoticed').value,
         resourceChallenges: document.getElementById('resourceChallenges').value,
         suggestedImprovements: document.getElementById('suggestedImprovements').value
       };
       localStorage.setItem(LS_NOTES_KEY, JSON.stringify(notesData));
-
-      // Date range
       const drData = {
         startDate: document.getElementById('startDate').value,
         endDate: document.getElementById('endDate').value
@@ -1096,7 +1109,6 @@
     }
 
     function loadAllData() {
-      // Completed
       const completedJSON = localStorage.getItem(LS_COMPLETED_KEY);
       if (completedJSON) {
         const rows = JSON.parse(completedJSON);
@@ -1116,7 +1128,9 @@
           ouCell.innerText = overUnder.text;
           if (overUnder.className) ouCell.classList.add(overUnder.className);
           row.insertCell().innerText = item.deficiencies;
-          row.insertCell().innerText = item.notes;
+          let notesCell = row.insertCell();
+          notesCell.innerText = item.notes;
+          notesCell.classList.add('notes');
           const actionsCell = row.insertCell();
           actionsCell.classList.add('no-pdf');
           actionsCell.innerHTML = `
@@ -1125,8 +1139,6 @@
           `;
         });
       }
-
-      // Ongoing
       const ongoingJSON = localStorage.getItem(LS_ONGOING_KEY);
       if (ongoingJSON) {
         const rows = JSON.parse(ongoingJSON);
@@ -1148,7 +1160,9 @@
           let estCell = row.insertCell();
           estCell.innerText = formatDateString(item.estCompletionRaw);
           estCell.setAttribute('data-raw', item.estCompletionRaw);
-          row.insertCell().innerText = item.notes;
+          let notesCell = row.insertCell();
+          notesCell.innerText = item.notes;
+          notesCell.classList.add('notes');
           const actionsCell = row.insertCell();
           actionsCell.classList.add('no-pdf');
           actionsCell.innerHTML = `
@@ -1157,8 +1171,6 @@
           `;
         });
       }
-
-      // Deficiencies
       const defJSON = localStorage.getItem(LS_DEFICIENCIES_KEY);
       if (defJSON) {
         const rows = JSON.parse(defJSON);
@@ -1182,8 +1194,6 @@
           `;
         });
       }
-
-      // Observations
       const notesJSON = localStorage.getItem(LS_NOTES_KEY);
       if (notesJSON) {
         const n = JSON.parse(notesJSON);
@@ -1191,8 +1201,6 @@
         document.getElementById('resourceChallenges').value = n.resourceChallenges || '';
         document.getElementById('suggestedImprovements').value = n.suggestedImprovements || '';
       }
-
-      // Date range
       const drJSON = localStorage.getItem(LS_DATE_RANGE_KEY);
       if (drJSON) {
         const dr = JSON.parse(drJSON);
@@ -1206,9 +1214,6 @@
       updateStats();
     }
 
-    // ======================
-    // INIT: Load data on window load
-    // ======================
     window.onload = loadAllData;
   </script>
 </body>
