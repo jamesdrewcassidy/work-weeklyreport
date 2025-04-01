@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Weekly Report</title>
-
-  <!-- jsPDF and html2canvas (CDN versions) -->
+  <title>Weekly I&T Progress Report</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- jsPDF, html2canvas and html2pdf (CDN versions) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
   <style>
     /* ========== GLOBAL RESET & BODY ========== */
     * {
@@ -18,7 +18,7 @@
     body {
       font-family: "Helvetica Neue", Arial, sans-serif;
       color: #333;
-      background-color: #fff; /* Keep white background for a clean PDF */
+      background-color: #fff; /* Clean white background for a professional PDF */
       margin: 20px;
     }
 
@@ -29,8 +29,16 @@
       background-color: #fff;
       padding: 20px;
       border-radius: 6px;
-      /* You can remove the box-shadow entirely if you want a completely flat look: */
-      /* box-shadow: 0 3px 6px rgba(0,0,0,0.1); */
+    }
+
+    /* ===== PAGE BREAK RULES (for PDF generation) ===== */
+    /* Avoid breaking important blocks */
+    #pdfContainer h1,
+    #pdfContainer h2,
+    #pdfContainer p,
+    #pdfContainer table,
+    #pdfContainer .observations-section {
+      page-break-inside: avoid;
     }
 
     /* ========== BUTTONS ========== */
@@ -46,27 +54,12 @@
     button:hover {
       box-shadow: 0 2px 5px rgba(0,0,0,0.15);
     }
-    .btn-primary {
-      background-color: #007bff;
-      color: #fff;
-    }
-    .btn-primary:hover {
-      background-color: #0056b3;
-    }
-    .btn-secondary {
-      background-color: #6c757d;
-      color: #fff;
-    }
-    .btn-secondary:hover {
-      background-color: #495057;
-    }
-    .btn-success {
-      background-color: #28a745;
-      color: #fff;
-    }
-    .btn-success:hover {
-      background-color: #218838;
-    }
+    .btn-primary { background-color: #007bff; color: #fff; }
+    .btn-primary:hover { background-color: #0056b3; }
+    .btn-secondary { background-color: #6c757d; color: #fff; }
+    .btn-secondary:hover { background-color: #495057; }
+    .btn-success { background-color: #28a745; color: #fff; }
+    .btn-success:hover { background-color: #218838; }
 
     /* ========== HEADINGS ========== */
     h1 {
@@ -107,7 +100,7 @@
 
     /* ========== REPORT SUMMARY ========== */
     #reportSummary {
-      background-color: #fefefe; /* Very light, nearly white */
+      background-color: #fefefe;
       padding: 15px;
       border: 1px solid #eee;
       border-radius: 6px;
@@ -118,7 +111,7 @@
       line-height: 1.4;
     }
 
-    /* ========== TABLES & STRIPED ROWS REMOVED ========== */
+    /* ========== TABLES ========== */
     table {
       table-layout: auto;
       width: 100%;
@@ -127,7 +120,6 @@
       font-size: 0.9rem;
     }
     table thead th {
-      /* Removed background-color to avoid gray blocks. */
       background-color: #fff;
       padding: 10px;
       border: 1px solid #ddd;
@@ -140,34 +132,16 @@
       word-wrap: break-word;
       white-space: normal;
     }
-    /* Remove striped row shading */
-    tbody tr:nth-child(even) {
-      background-color: #fff;
-    }
-    /* Remove hover shading */
-    tr:hover td {
-      background-color: #fff;
-    }
+    tbody tr:nth-child(even) { background-color: #fff; }
+    tr:hover td { background-color: #fff; }
 
     /* Over/Under color coding */
-    .over-budget {
-      color: red;
-      font-weight: bold;
-    }
-    .under-budget {
-      color: green;
-      font-weight: bold;
-    }
-
-    /* Highlight critical deficiency rows */
-    .critical-def td {
-      background-color: #ffecec; /* Light red/pink background for critical only */
-    }
+    .over-budget { color: red; font-weight: bold; }
+    .under-budget { color: green; font-weight: bold; }
+    .critical-def td { background-color: #ffecec; }
 
     /* ========== FORMS, INPUTS, MODALS ========== */
-    form {
-      margin: 0;
-    }
+    form { margin: 0; }
     .modal {
       display: none; 
       position: fixed; 
@@ -186,14 +160,8 @@
       display: flex !important;
       animation: fadeIn 0.3s forwards;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to   { opacity: 1; }
-    }
-    @keyframes fadeOut {
-      from { opacity: 1; }
-      to   { opacity: 0; }
-    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
     .modal-content {
       background-color: #fff;
       margin: auto;
@@ -204,11 +172,10 @@
       overflow-y: auto;
       position: relative;
       animation: slideDown 0.3s;
+      /* Accessibility: ARIA attributes and focus handling */
     }
-    @keyframes slideDown {
-      from { transform: translateY(-15px); }
-      to   { transform: translateY(0); }
-    }
+    .modal-content:focus { outline: none; }
+    @keyframes slideDown { from { transform: translateY(-15px); } to { transform: translateY(0); } }
     .close {
       color: #aaa;
       float: right;
@@ -217,12 +184,8 @@
       cursor: pointer;
       margin-top: -2px;
     }
-    .close:hover {
-      color: #000;
-    }
-    .form-group {
-      margin-bottom: 12px;
-    }
+    .close:hover { color: #000; }
+    .form-group { margin-bottom: 12px; }
     .form-group label {
       display: block;
       font-weight: 600;
@@ -239,17 +202,8 @@
       border-radius: 4px;
       font-size: 0.9rem;
     }
-    /* placeholders for guidance */
-    input::placeholder,
-    textarea::placeholder {
-      color: #aaa;
-    }
-    .submit-btn {
-      margin-top: 10px;
-      font-size: 0.9rem;
-      border-radius: 4px;
-      padding: 8px 14px;
-    }
+    input::placeholder, textarea::placeholder { color: #aaa; }
+    .submit-btn { margin-top: 10px; font-size: 0.9rem; border-radius: 4px; padding: 8px 14px; }
 
     /* ========== OBSERVATIONS SECTION ========== */
     .observations-section {
@@ -261,35 +215,57 @@
       white-space: pre-wrap;
       word-wrap: break-word;
     }
+    /* (In PDF mode these textareas are temporarily replaced with divs.) */
 
     /* ========== HIDE .no-pdf FOR PRINT ========== */
     @media print {
-      .no-pdf {
-        display: none !important;
-      }
+      .no-pdf { display: none !important; }
     }
 
     /* ========== RESPONSIVE ========== */
     @media (max-width: 600px) {
-      body {
-        margin: 10px;
-      }
-      #pdfContainer {
-        padding: 10px;
-      }
-      .modal-content {
-        width: 90% !important;
-      }
-      table, th, td {
-        font-size: 0.8rem;
-      }
-      h2 {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      #dateRangeForm input[type="date"] {
-        margin: 4px 10px 4px 0;
-      }
+      body { margin: 10px; }
+      #pdfContainer { padding: 10px; }
+      .modal-content { width: 90% !important; }
+      table, th, td { font-size: 0.8rem; }
+      h2 { flex-direction: column; align-items: flex-start; }
+      #dateRangeForm input[type="date"] { margin: 4px 10px 4px 0; }
+    }
+
+    /* ===== PDF MODE FINAL STYLING OVERRIDES ===== */
+    #pdfContainer.pdf-mode {
+      border: 1px solid #ccc;
+    }
+    #pdfContainer.pdf-mode h1 {
+      font-size: 2rem !important;
+      margin-bottom: 20px !important;
+      letter-spacing: 1.5px;
+    }
+    #pdfContainer.pdf-mode h2 {
+      font-size: 1.5rem !important;
+      margin-top: 20px !important;
+      margin-bottom: 10px !important;
+      padding-left: 10px !important;
+      border-left: 5px solid #0056b3 !important;
+    }
+    #pdfContainer.pdf-mode p {
+      font-size: 1rem !important;
+      line-height: 1.6 !important;
+      margin-bottom: 10px !important;
+    }
+    #pdfContainer.pdf-mode table {
+      margin-bottom: 20px !important;
+      border-collapse: collapse !important;
+    }
+    #pdfContainer.pdf-mode table thead th {
+      background-color: #f2f2f2 !important;
+      font-weight: bold !important;
+      padding: 10px !important;
+      border: 1px solid #ddd !important;
+    }
+    #pdfContainer.pdf-mode table tbody td {
+      padding: 10px !important;
+      border: 1px solid #ddd !important;
     }
   </style>
 </head>
@@ -312,29 +288,29 @@
 
   <!-- “Add” Buttons for data entry -->
   <div style="max-width:920px; margin:0 auto 1rem auto;">
-    <button class="btn-primary" onclick="showCompletedForm()">Add Completed Inspection</button>
-    <button class="btn-primary" onclick="showOngoingForm()">Add Ongoing Inspection</button>
-    <button class="btn-primary" onclick="showDeficiencyForm()">Add Deficiency / Follow-up</button>
+    <button class="btn-primary" onclick="openModal('completedModal', 'completedProjectNumber')">Add Completed Inspection</button>
+    <button class="btn-primary" onclick="openModal('ongoingModal', 'ongoingProjectNumber')">Add Ongoing Inspection</button>
+    <button class="btn-primary" onclick="openModal('deficiencyModal', 'defSiteName')">Add Deficiency / Follow-up</button>
   </div>
 
-  <!-- ========== PDF CONTAINER (INCLUDES ONLY REPORTING ELEMENTS) ========== -->
+  <!-- ========== PDF CONTAINER (REPORTING ELEMENTS) ========== -->
   <div id="pdfContainer">
     <!-- Report Summary Section -->
     <div id="reportSummary">
       <h2>Report Summary</h2>
-      <p><strong>Date Range Covered:</strong> 
+      <p><strong>Date Range Covered:</strong>
          <span id="dateRangeDisplay">[mm/dd/yyyy - mm/dd/yyyy]</span></p>
-      <p><strong>Total Inspections Completed:</strong> 
+      <p><strong>Total Inspections Completed:</strong>
          <span id="totalCompletedCount">0</span></p>
-      <p><strong>Total Hours (Bid vs. Worked):</strong> 
+      <p><strong>Total Hours (Bid vs. Worked):</strong>
          <span id="totalBidHours">0</span> / <span id="totalHoursWorked">0</span></p>
-      <p><strong>Number of Sites with Deficiencies:</strong> 
+      <p><strong>Number of Sites with Deficiencies:</strong>
          <span id="defSiteCount">0</span></p>
-      <p><strong>Open Follow-up Actions:</strong> 
+      <p><strong>Open Follow-up Actions:</strong>
          <span id="openFollowupCount">0</span></p>
     </div>
 
-    <h1>Weekly Report</h1>
+    <h1>Weekly I&T Progress Report</h1>
 
     <!-- Completed Inspections Section -->
     <section>
@@ -420,8 +396,8 @@
        ========================================= -->
   <!-- Completed Inspection Modal -->
   <div id="completedModal" class="modal" onclick="outsideClickClose(event, 'completedModal')">
-    <div class="modal-content">
-      <span class="close" onclick="closeCompletedForm()">&times;</span>
+    <div class="modal-content" role="dialog" aria-modal="true" tabindex="-1">
+      <span class="close" onclick="closeModal('completedModal')">&times;</span>
       <h3>Add Completed Inspection</h3>
       <form onsubmit="addCompleted(event)">
         <div class="form-group">
@@ -459,8 +435,8 @@
 
   <!-- Ongoing Inspection Modal -->
   <div id="ongoingModal" class="modal" onclick="outsideClickClose(event, 'ongoingModal')">
-    <div class="modal-content">
-      <span class="close" onclick="closeOngoingForm()">&times;</span>
+    <div class="modal-content" role="dialog" aria-modal="true" tabindex="-1">
+      <span class="close" onclick="closeModal('ongoingModal')">&times;</span>
       <h3>Add Ongoing Inspection</h3>
       <form onsubmit="addOngoing(event)">
         <div class="form-group">
@@ -498,8 +474,8 @@
 
   <!-- Deficiency / Follow-up Modal -->
   <div id="deficiencyModal" class="modal" onclick="outsideClickClose(event, 'deficiencyModal')">
-    <div class="modal-content">
-      <span class="close" onclick="closeDeficiencyForm()">&times;</span>
+    <div class="modal-content" role="dialog" aria-modal="true" tabindex="-1">
+      <span class="close" onclick="closeModal('deficiencyModal')">&times;</span>
       <h3>Add Deficiency / Follow-up</h3>
       <form onsubmit="addDeficiency(event)">
         <div class="form-group">
@@ -532,8 +508,8 @@
 
   <!-- Edit Completed Inspection Modal -->
   <div id="editCompletedModal" class="modal" onclick="outsideClickClose(event, 'editCompletedModal')">
-    <div class="modal-content">
-      <span class="close" onclick="closeEditCompletedForm()">&times;</span>
+    <div class="modal-content" role="dialog" aria-modal="true" tabindex="-1">
+      <span class="close" onclick="closeModal('editCompletedModal')">&times;</span>
       <h3>Edit Completed Inspection</h3>
       <form onsubmit="editCompleted(event)">
         <div class="form-group">
@@ -571,8 +547,8 @@
 
   <!-- Edit Ongoing Inspection Modal -->
   <div id="editOngoingModal" class="modal" onclick="outsideClickClose(event, 'editOngoingModal')">
-    <div class="modal-content">
-      <span class="close" onclick="closeEditOngoingForm()">&times;</span>
+    <div class="modal-content" role="dialog" aria-modal="true" tabindex="-1">
+      <span class="close" onclick="closeModal('editOngoingModal')">&times;</span>
       <h3>Edit Ongoing Inspection</h3>
       <form onsubmit="editOngoing(event)">
         <div class="form-group">
@@ -610,8 +586,8 @@
 
   <!-- Edit Deficiency / Follow-up Modal -->
   <div id="editDeficiencyModal" class="modal" onclick="outsideClickClose(event, 'editDeficiencyModal')">
-    <div class="modal-content">
-      <span class="close" onclick="closeEditDeficiencyForm()">&times;</span>
+    <div class="modal-content" role="dialog" aria-modal="true" tabindex="-1">
+      <span class="close" onclick="closeModal('editDeficiencyModal')">&times;</span>
       <h3>Edit Deficiency / Follow-up</h3>
       <form onsubmit="editDeficiency(event)">
         <div class="form-group">
@@ -646,11 +622,11 @@
     // ======================
     // LOCAL STORAGE KEYS
     // ======================
-    const LS_COMPLETED_KEY   = 'weekly_completed';
-    const LS_ONGOING_KEY     = 'weekly_ongoing';
-    const LS_DEFICIENCIES_KEY= 'weekly_deficiencies';
-    const LS_NOTES_KEY       = 'weekly_notes';
-    const LS_DATE_RANGE_KEY  = 'weekly_dateRange';
+    const LS_COMPLETED_KEY    = 'weekly_completed';
+    const LS_ONGOING_KEY      = 'weekly_ongoing';
+    const LS_DEFICIENCIES_KEY = 'weekly_deficiencies';
+    const LS_NOTES_KEY        = 'weekly_notes';
+    const LS_DATE_RANGE_KEY   = 'weekly_dateRange';
 
     // ======================
     // DATE HELPERS
@@ -691,13 +667,12 @@
     }
 
     // ======================
-    // UPDATE STATS
+    // UPDATE STATS & SAVE DATA
     // ======================
     function updateStats() {
-      // Completed
+      // Completed inspections
       const cRows = document.querySelectorAll('#completedTable tbody tr');
       document.getElementById('totalCompletedCount').innerText = cRows.length;
-
       let sumBidCompleted = 0, sumActCompleted = 0;
       cRows.forEach(row => {
         const bidH = parseFloat(row.cells[3].innerText) || 0;
@@ -705,8 +680,7 @@
         sumBidCompleted += bidH;
         sumActCompleted += actH;
       });
-
-      // Ongoing
+      // Ongoing inspections
       const oRows = document.querySelectorAll('#ongoingTable tbody tr');
       let sumBidOngoing = 0, sumWorkedOngoing = 0;
       oRows.forEach(row => {
@@ -715,18 +689,14 @@
         sumBidOngoing += bidH;
         sumWorkedOngoing += workedH;
       });
-
       const totalBid = sumBidCompleted + sumBidOngoing;
       const totalWorked = sumActCompleted + sumWorkedOngoing;
       document.getElementById('totalBidHours').innerText = totalBid.toFixed(2);
       document.getElementById('totalHoursWorked').innerText = totalWorked.toFixed(2);
-
       // Deficiencies
       const dRows = document.querySelectorAll('#deficiencyTable tbody tr');
       document.getElementById('defSiteCount').innerText = dRows.length;
       document.getElementById('openFollowupCount').innerText = dRows.length;
-
-      // Save data to localStorage
       saveAllData();
     }
 
@@ -743,124 +713,81 @@
     }
 
     // ======================
-    // CLEAR ALL
+    // CLEAR ALL ENTRIES
     // ======================
     function clearAllData() {
       if (!confirm("Are you sure you want to clear all entries?")) return;
       document.querySelector('#completedTable tbody').innerHTML = '';
       document.querySelector('#ongoingTable tbody').innerHTML = '';
       document.querySelector('#deficiencyTable tbody').innerHTML = '';
-
       document.getElementById('startDate').value = '';
       document.getElementById('endDate').value = '';
       document.getElementById('dateRangeDisplay').innerText = '[mm/dd/yyyy - mm/dd/yyyy]';
-
       document.getElementById('trendsNoticed').value = '';
       document.getElementById('resourceChallenges').value = '';
       document.getElementById('suggestedImprovements').value = '';
-
       updateStats();
       localStorage.clear();
     }
 
     // ======================
-    // DOWNLOAD PDF
+    // DOWNLOAD PDF USING html2pdf.js (handles page-breaks)
     // ======================
     async function downloadPDF() {
-      // Hide .no-pdf
-      const noPdfEls = document.querySelectorAll('.no-pdf');
-      noPdfEls.forEach(el => el.style.display = 'none');
-
-      const pdfEl = document.getElementById('pdfContainer');
-      const canvas = await html2canvas(pdfEl, {
-        scale: 1,
-        backgroundColor: '#ffffff'
-      });
-      const imgData = canvas.toDataURL('image/png');
-      const { jsPDF } = window.jspdf;
-
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth  = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-
-      const cWidth  = canvas.width;
-      const cHeight = canvas.height;
-      const ratio = cHeight / cWidth;
-      const pdfImgWidth = pageWidth - 10;
-      const pdfImgHeight = pdfImgWidth * ratio;
-
-      let heightLeft = pdfImgHeight;
-      let position = 10;
-
-      pdf.addImage(imgData, 'PNG', 5, position, pdfImgWidth, pdfImgHeight, null, 'FAST');
-      heightLeft -= (pageHeight - 20);
-
-      while (heightLeft > 0) {
-        pdf.addPage();
-        position = 10;
-        pdf.addImage(
-          imgData, 'PNG',
-          5,
-          position - (pdfImgHeight - heightLeft),
-          pdfImgWidth,
-          pdfImgHeight,
-          null,
-          'FAST'
-        );
-        heightLeft -= (pageHeight - 20);
-      }
-
-      pdf.save("WeeklyReport.pdf");
-      // Restore .no-pdf
-      noPdfEls.forEach(el => el.style.display = '');
+      // Hide non-PDF elements
+      document.querySelectorAll('.no-pdf').forEach(el => el.style.display = 'none');
+      
+      const pdfContainer = document.getElementById('pdfContainer');
+      const opt = {
+        margin: 10,
+        filename: 'Weekly_IT_Progress_Report.pdf',
+        image: { type: 'png', quality: 1 },
+        html2canvas: { scale: window.devicePixelRatio || 2, backgroundColor: '#ffffff' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        // Using pagebreak mode to avoid splitting inside elements that have CSS page-break rules
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+      
+      await html2pdf().set(opt).from(pdfContainer).save();
+      
+      // Restore non-PDF elements
+      document.querySelectorAll('.no-pdf').forEach(el => el.style.display = '');
     }
 
     // ======================
-    // MODALS: Show & Close
+    // GENERIC MODAL HELPERS
     // ======================
-    function showCompletedForm() {
-      const modal = document.getElementById('completedModal');
+    function openModal(modalId, focusElementId) {
+      const modal = document.getElementById(modalId);
       modal.classList.add('show');
-      setTimeout(() => document.getElementById('completedProjectNumber').focus(), 150);
+      if (focusElementId) setTimeout(() => document.getElementById(focusElementId).focus(), 150);
     }
-    function closeCompletedForm() {
-      const modal = document.getElementById('completedModal');
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
       modal.classList.remove('show');
-      document.querySelector('#completedModal form').reset();
-    }
-    function showOngoingForm() {
-      const modal = document.getElementById('ongoingModal');
-      modal.classList.add('show');
-      setTimeout(() => document.getElementById('ongoingProjectNumber').focus(), 150);
-    }
-    function closeOngoingForm() {
-      const modal = document.getElementById('ongoingModal');
-      modal.classList.remove('show');
-      document.querySelector('#ongoingModal form').reset();
-    }
-    function showDeficiencyForm() {
-      const modal = document.getElementById('deficiencyModal');
-      modal.classList.add('show');
-      setTimeout(() => document.getElementById('defSiteName').focus(), 150);
-    }
-    function closeDeficiencyForm() {
-      const modal = document.getElementById('deficiencyModal');
-      modal.classList.remove('show');
-      document.querySelector('#deficiencyModal form').reset();
+      const form = modal.querySelector('form');
+      if (form) form.reset();
     }
     function outsideClickClose(e, modalId) {
       if (e.target.id === modalId) {
-        document.getElementById(modalId).classList.remove('show');
+        closeModal(modalId);
       }
     }
+    // Close modals with Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === "Escape") {
+        document.querySelectorAll('.modal.show').forEach(modal => modal.classList.remove('show'));
+      }
+    });
 
-    // Edit modals
+    // ======================
+    // EDIT MODALS: Open & Close
+    // ======================
     let currentEditCompletedRow = null;
     function openEditCompleted(btn) {
       let row = btn.parentNode.parentNode;
       currentEditCompletedRow = row;
       const r = row.cells;
-
       document.getElementById('editCompletedProjectNumber').value = r[0].innerText;
       document.getElementById('editCompletedSiteName').value = r[1].innerText;
       document.getElementById('editCompletedDate').value = r[2].getAttribute('data-raw') || '';
@@ -868,23 +795,12 @@
       document.getElementById('editCompletedActualHours').value = r[4].innerText;
       document.getElementById('editCompletedDeficienciesFound').value = r[6].innerText;
       document.getElementById('editCompletedNotes').value = r[7].innerText;
-
-      document.getElementById('editCompletedModal').classList.add('show');
-      setTimeout(() => document.getElementById('editCompletedProjectNumber').focus(), 150);
+      openModal('editCompletedModal', 'editCompletedProjectNumber');
     }
-    function closeEditCompletedForm() {
-      const modal = document.getElementById('editCompletedModal');
-      modal.classList.remove('show');
-      currentEditCompletedRow = null;
-      document.querySelector('#editCompletedModal form').reset();
-    }
-
-    let currentEditOngoingRow = null;
     function openEditOngoing(btn) {
       let row = btn.parentNode.parentNode;
       currentEditOngoingRow = row;
       const r = row.cells;
-
       document.getElementById('editOngoingProjectNumber').value = r[0].innerText;
       document.getElementById('editOngoingSiteName').value = r[1].innerText;
       document.getElementById('editOngoingStartDate').value = r[2].getAttribute('data-raw') || '';
@@ -892,37 +808,19 @@
       document.getElementById('editOngoingHoursWorked').value = r[4].innerText;
       document.getElementById('editOngoingEstCompletion').value = r[6].getAttribute('data-raw') || '';
       document.getElementById('editOngoingNotes').value = r[7].innerText;
-
-      document.getElementById('editOngoingModal').classList.add('show');
-      setTimeout(() => document.getElementById('editOngoingProjectNumber').focus(), 150);
+      openModal('editOngoingModal', 'editOngoingProjectNumber');
     }
-    function closeEditOngoingForm() {
-      const modal = document.getElementById('editOngoingModal');
-      modal.classList.remove('show');
-      currentEditOngoingRow = null;
-      document.querySelector('#editOngoingModal form').reset();
-    }
-
     let currentEditDeficiencyRow = null;
     function openEditDeficiency(btn) {
       let row = btn.parentNode.parentNode;
       currentEditDeficiencyRow = row;
       const r = row.cells;
-
       document.getElementById('editDefSiteName').value = r[0].innerText;
       document.getElementById('editDefIsCritical').value = r[1].innerText;
       document.getElementById('editDefNextSteps').value = r[2].innerText;
       document.getElementById('editDefFollowUpDate').value = r[3].getAttribute('data-raw') || '';
       document.getElementById('editDefAssignedTo').value = r[4].innerText;
-
-      document.getElementById('editDeficiencyModal').classList.add('show');
-      setTimeout(() => document.getElementById('editDefSiteName').focus(), 150);
-    }
-    function closeEditDeficiencyForm() {
-      const modal = document.getElementById('editDeficiencyModal');
-      modal.classList.remove('show');
-      currentEditDeficiencyRow = null;
-      document.querySelector('#editDeficiencyModal form').reset();
+      openModal('editDeficiencyModal', 'editDefSiteName');
     }
 
     // ======================
@@ -935,7 +833,7 @@
     }
 
     // ======================
-    // ADD: Completed
+    // ADD: Completed Inspection
     // ======================
     function addCompleted(e) {
       e.preventDefault();
@@ -946,41 +844,33 @@
       const ah = document.getElementById('completedActualHours').value.trim();
       const df = document.getElementById('completedDeficienciesFound').value.trim();
       const notes = document.getElementById('completedNotes').value.trim();
-
       const tbody = document.querySelector('#completedTable tbody');
       const row = tbody.insertRow();
-
       row.insertCell().innerText = pn;
       row.insertCell().innerText = sn;
-
       let dateC = row.insertCell();
       dateC.innerText = formatDateString(dt);
       dateC.setAttribute('data-raw', dt);
-
       row.insertCell().innerText = bh;
       row.insertCell().innerText = ah;
-
       const overUnder = calculateOverUnder(bh, ah);
       let ouCell = row.insertCell();
       ouCell.innerText = overUnder.text;
       if (overUnder.className) ouCell.classList.add(overUnder.className);
-
       row.insertCell().innerText = df;
       row.insertCell().innerText = notes;
-
       const actionsCell = row.insertCell();
       actionsCell.classList.add('no-pdf');
       actionsCell.innerHTML = `
         <button class="btn-secondary" onclick="openEditCompleted(this)">Edit</button>
         <button class="btn-secondary" onclick="deleteRow(this)">Delete</button>
       `;
-
-      closeCompletedForm();
+      closeModal('completedModal');
       updateStats();
     }
 
     // ======================
-    // ADD: Ongoing
+    // ADD: Ongoing Inspection
     // ======================
     function addOngoing(e) {
       e.preventDefault();
@@ -991,44 +881,35 @@
       const hw = document.getElementById('ongoingHoursWorked').value.trim();
       const estC = document.getElementById('ongoingEstCompletion').value;
       const notes = document.getElementById('ongoingNotes').value.trim();
-
       const tbody = document.querySelector('#ongoingTable tbody');
       const row = tbody.insertRow();
-
       row.insertCell().innerText = pn;
       row.insertCell().innerText = sn;
-
       let sdCell = row.insertCell();
       sdCell.innerText = formatDateString(startD);
       sdCell.setAttribute('data-raw', startD);
-
       row.insertCell().innerText = bh;
       row.insertCell().innerText = hw;
-
       const overUnder = calculateOverUnder(bh, hw);
       let ouCell = row.insertCell();
       ouCell.innerText = overUnder.text;
       if (overUnder.className) ouCell.classList.add(overUnder.className);
-
       let estCell = row.insertCell();
       estCell.innerText = formatDateString(estC);
       estCell.setAttribute('data-raw', estC);
-
       row.insertCell().innerText = notes;
-
       const actionsCell = row.insertCell();
       actionsCell.classList.add('no-pdf');
       actionsCell.innerHTML = `
         <button class="btn-secondary" onclick="openEditOngoing(this)">Edit</button>
         <button class="btn-secondary" onclick="deleteRow(this)">Delete</button>
       `;
-
-      closeOngoingForm();
+      closeModal('ongoingModal');
       updateStats();
     }
 
     // ======================
-    // ADD: Deficiency
+    // ADD: Deficiency / Follow-up
     // ======================
     function addDeficiency(e) {
       e.preventDefault();
@@ -1037,42 +918,33 @@
       const nxt = document.getElementById('defNextSteps').value.trim();
       const fud = document.getElementById('defFollowUpDate').value;
       const assigned = document.getElementById('defAssignedTo').value.trim();
-
       const tbody = document.querySelector('#deficiencyTable tbody');
       const row = tbody.insertRow();
-
-      if (crit === "Y") {
-        row.classList.add('critical-def');
-      }
+      if (crit === "Y") row.classList.add('critical-def');
       row.insertCell().innerText = sn;
       row.insertCell().innerText = crit;
       row.insertCell().innerText = nxt;
-
       let followUpCell = row.insertCell();
       followUpCell.innerText = fud ? formatDateString(fud) : "";
       if (fud) followUpCell.setAttribute('data-raw', fud);
-
       row.insertCell().innerText = assigned;
-
       const actionsCell = row.insertCell();
       actionsCell.classList.add('no-pdf');
       actionsCell.innerHTML = `
         <button class="btn-secondary" onclick="openEditDeficiency(this)">Edit</button>
         <button class="btn-secondary" onclick="deleteRow(this)">Delete</button>
       `;
-
-      closeDeficiencyForm();
+      closeModal('deficiencyModal');
       updateStats();
     }
 
     // ======================
-    // EDIT Completed
+    // EDIT: Completed Inspection
     // ======================
     function editCompleted(e) {
       e.preventDefault();
       if (!currentEditCompletedRow) return;
       const r = currentEditCompletedRow.cells;
-
       const pNum = document.getElementById('editCompletedProjectNumber').value.trim();
       const sName = document.getElementById('editCompletedSiteName').value.trim();
       const dt = document.getElementById('editCompletedDate').value;
@@ -1080,35 +952,29 @@
       const aH = document.getElementById('editCompletedActualHours').value.trim();
       const def = document.getElementById('editCompletedDeficienciesFound').value.trim();
       const nts = document.getElementById('editCompletedNotes').value.trim();
-
       r[0].innerText = pNum;
       r[1].innerText = sName;
       r[2].innerText = formatDateString(dt);
       r[2].setAttribute('data-raw', dt);
-
       r[3].innerText = bH;
       r[4].innerText = aH;
-
       const overUnder = calculateOverUnder(bH, aH);
       r[5].innerText = overUnder.text;
       r[5].className = '';
       if (overUnder.className) r[5].classList.add(overUnder.className);
-
       r[6].innerText = def;
       r[7].innerText = nts;
-
-      closeEditCompletedForm();
+      closeModal('editCompletedModal');
       updateStats();
     }
 
     // ======================
-    // EDIT Ongoing
+    // EDIT: Ongoing Inspection
     // ======================
     function editOngoing(e) {
       e.preventDefault();
       if (!currentEditOngoingRow) return;
       const r = currentEditOngoingRow.cells;
-
       const pN = document.getElementById('editOngoingProjectNumber').value.trim();
       const sN = document.getElementById('editOngoingSiteName').value.trim();
       const sd = document.getElementById('editOngoingStartDate').value;
@@ -1116,46 +982,38 @@
       const wH = document.getElementById('editOngoingHoursWorked').value.trim();
       const eC = document.getElementById('editOngoingEstCompletion').value;
       const nt = document.getElementById('editOngoingNotes').value.trim();
-
       r[0].innerText = pN;
       r[1].innerText = sN;
       r[2].innerText = formatDateString(sd);
       r[2].setAttribute('data-raw', sd);
-
       r[3].innerText = bH;
       r[4].innerText = wH;
-
       const overUnder = calculateOverUnder(bH, wH);
       r[5].innerText = overUnder.text;
       r[5].className = '';
       if (overUnder.className) r[5].classList.add(overUnder.className);
-
       r[6].innerText = formatDateString(eC);
       r[6].setAttribute('data-raw', eC);
       r[7].innerText = nt;
-
-      closeEditOngoingForm();
+      closeModal('editOngoingModal');
       updateStats();
     }
 
     // ======================
-    // EDIT Deficiency
+    // EDIT: Deficiency / Follow-up
     // ======================
     function editDeficiency(e) {
       e.preventDefault();
       if (!currentEditDeficiencyRow) return;
       const r = currentEditDeficiencyRow.cells;
-
       const siteN = document.getElementById('editDefSiteName').value.trim();
       const crit = document.getElementById('editDefIsCritical').value;
       const nxt = document.getElementById('editDefNextSteps').value.trim();
       const fDate = document.getElementById('editDefFollowUpDate').value;
       const assign = document.getElementById('editDefAssignedTo').value.trim();
-
       r[0].innerText = siteN;
       r[1].innerText = crit;
       r[2].innerText = nxt;
-
       if (fDate) {
         r[3].innerText = formatDateString(fDate);
         r[3].setAttribute('data-raw', fDate);
@@ -1164,13 +1022,11 @@
         r[3].removeAttribute('data-raw');
       }
       r[4].innerText = assign;
-
       currentEditDeficiencyRow.classList.remove('critical-def');
       if (crit === "Y") {
         currentEditDeficiencyRow.classList.add('critical-def');
       }
-
-      closeEditDeficiencyForm();
+      closeModal('editDeficiencyModal');
       updateStats();
     }
 
@@ -1187,7 +1043,7 @@
           dateRaw: cells[2].getAttribute('data-raw'),
           bidHours: cells[3].innerText,
           actualHours: cells[4].innerText,
-          overUnder: cells[5].innerText, // display only
+          overUnder: cells[5].innerText,
           deficiencies: cells[6].innerText,
           notes: cells[7].innerText
         };
@@ -1203,7 +1059,7 @@
           startDateRaw: cells[2].getAttribute('data-raw'),
           bidHours: cells[3].innerText,
           hoursWorked: cells[4].innerText,
-          overUnder: cells[5].innerText, // display only
+          overUnder: cells[5].innerText,
           estCompletionRaw: cells[6].getAttribute('data-raw'),
           notes: cells[7].innerText
         };
@@ -1250,22 +1106,17 @@
           const row = tbody.insertRow();
           row.insertCell().innerText = item.projectNumber;
           row.insertCell().innerText = item.siteName;
-
           let dateC = row.insertCell();
           dateC.innerText = formatDateString(item.dateRaw);
           dateC.setAttribute('data-raw', item.dateRaw);
-
           row.insertCell().innerText = item.bidHours;
           row.insertCell().innerText = item.actualHours;
-
           let overUnder = calculateOverUnder(item.bidHours, item.actualHours);
           let ouCell = row.insertCell();
           ouCell.innerText = overUnder.text;
           if (overUnder.className) ouCell.classList.add(overUnder.className);
-
           row.insertCell().innerText = item.deficiencies;
           row.insertCell().innerText = item.notes;
-
           const actionsCell = row.insertCell();
           actionsCell.classList.add('no-pdf');
           actionsCell.innerHTML = `
@@ -1285,25 +1136,19 @@
           const row = tbody.insertRow();
           row.insertCell().innerText = item.projectNumber;
           row.insertCell().innerText = item.siteName;
-
           let sdCell = row.insertCell();
           sdCell.innerText = formatDateString(item.startDateRaw);
           sdCell.setAttribute('data-raw', item.startDateRaw);
-
           row.insertCell().innerText = item.bidHours;
           row.insertCell().innerText = item.hoursWorked;
-
           let overUnder = calculateOverUnder(item.bidHours, item.hoursWorked);
           let ouCell = row.insertCell();
           ouCell.innerText = overUnder.text;
           if (overUnder.className) ouCell.classList.add(overUnder.className);
-
           let estCell = row.insertCell();
           estCell.innerText = formatDateString(item.estCompletionRaw);
           estCell.setAttribute('data-raw', item.estCompletionRaw);
-
           row.insertCell().innerText = item.notes;
-
           const actionsCell = row.insertCell();
           actionsCell.classList.add('no-pdf');
           actionsCell.innerHTML = `
@@ -1321,19 +1166,14 @@
         tbody.innerHTML = '';
         rows.forEach(item => {
           const row = tbody.insertRow();
-          if (item.isCritical === "Y") {
-            row.classList.add('critical-def');
-          }
+          if (item.isCritical === "Y") row.classList.add('critical-def');
           row.insertCell().innerText = item.siteName;
           row.insertCell().innerText = item.isCritical;
           row.insertCell().innerText = item.nextSteps;
-
           let followUpCell = row.insertCell();
           followUpCell.innerText = item.followUpRaw ? formatDateString(item.followUpRaw) : '';
           if (item.followUpRaw) followUpCell.setAttribute('data-raw', item.followUpRaw);
-
           row.insertCell().innerText = item.assignedTo;
-
           const actionsCell = row.insertCell();
           actionsCell.classList.add('no-pdf');
           actionsCell.innerHTML = `
@@ -1359,21 +1199,17 @@
         document.getElementById('startDate').value = dr.startDate || '';
         document.getElementById('endDate').value = dr.endDate || '';
         if (dr.startDate && dr.endDate) {
-          document.getElementById('dateRangeDisplay').innerText = 
+          document.getElementById('dateRangeDisplay').innerText =
             `${formatDateString(dr.startDate)} - ${formatDateString(dr.endDate)}`;
         }
       }
-
-      updateStats(); // to recalc Over/Under classes, etc.
+      updateStats();
     }
 
     // ======================
-    // INIT
+    // INIT: Load data on window load
     // ======================
-    window.onload = function() {
-      loadAllData();
-    };
+    window.onload = loadAllData;
   </script>
-
 </body>
 </html>
