@@ -21,7 +21,6 @@
       background-color: #fff;
       margin: 20px;
     }
-
     /* ========== CONTAINER FOR PDF & MAX-WIDTH ========== */
     #pdfContainer {
       max-width: 920px;
@@ -30,8 +29,7 @@
       padding: 20px;
       border-radius: 6px;
     }
-
-    /* ===== PAGE BREAK RULES (for PDF generation) ===== */
+    /* ===== PAGE BREAK RULES ===== */
     #pdfContainer h1,
     #pdfContainer h2,
     #pdfContainer p,
@@ -39,14 +37,13 @@
     #pdfContainer .observations-section {
       page-break-inside: avoid;
     }
-
-    /* ===== NOTES CELLS: Allow wrapping without fixed max-width ===== */
-    td.notes, th.notes {
-      white-space: pre-wrap;
-      overflow-wrap: break-word;
-      word-break: break-word;
+    /* ===== NOTES ROW STYLING ===== */
+    .notes-row td {
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      padding: 10px;
+      font-style: italic;
     }
-
     /* ========== BUTTONS ========== */
     button {
       cursor: pointer;
@@ -66,7 +63,6 @@
     .btn-secondary:hover { background-color: #495057; }
     .btn-success { background-color: #28a745; color: #fff; }
     .btn-success:hover { background-color: #218838; }
-
     /* ========== HEADINGS ========== */
     h1 {
       margin-top: 0.5rem;
@@ -94,7 +90,6 @@
       font-size: 1.1rem;
       color: #2c3e50;
     }
-
     /* ========== TOP ACTIONS WRAPPER ========== */
     .top-actions {
       max-width: 920px;
@@ -103,7 +98,6 @@
       align-items: center;
       justify-content: flex-start;
     }
-
     /* ========== REPORT SUMMARY ========== */
     #reportSummary {
       background-color: #fefefe;
@@ -116,7 +110,6 @@
       margin-bottom: 0.5rem;
       line-height: 1.4;
     }
-
     /* ========== TABLES ========== */
     table {
       table-layout: auto;
@@ -140,12 +133,10 @@
     }
     tbody tr:nth-child(even) { background-color: #fff; }
     tr:hover td { background-color: #fff; }
-
     /* Over/Under color coding */
     .over-budget { color: red; font-weight: bold; }
     .under-budget { color: green; font-weight: bold; }
     .critical-def td { background-color: #ffecec; }
-
     /* ========== FORMS, INPUTS, MODALS ========== */
     form { margin: 0; }
     .modal {
@@ -209,7 +200,6 @@
     }
     input::placeholder, textarea::placeholder { color: #aaa; }
     .submit-btn { margin-top: 10px; font-size: 0.9rem; border-radius: 4px; padding: 8px 14px; }
-
     /* ========== OBSERVATIONS SECTION ========== */
     .observations-section {
       margin-bottom: 2rem;
@@ -220,12 +210,10 @@
       white-space: pre-wrap;
       word-wrap: break-word;
     }
-
     /* ========== HIDE .no-pdf FOR PRINT ========== */
     @media print {
       .no-pdf { display: none !important; }
     }
-
     /* ========== RESPONSIVE ========== */
     @media (max-width: 600px) {
       body { margin: 10px; }
@@ -235,7 +223,6 @@
       h2 { flex-direction: column; align-items: flex-start; }
       #dateRangeForm input[type="date"] { margin: 4px 10px 4px 0; }
     }
-
     /* ===== PDF MODE FINAL STYLING OVERRIDES ===== */
     #pdfContainer.pdf-mode {
       border: 1px solid #ccc;
@@ -282,10 +269,10 @@
   </div>
 
   <!-- Date Range Form -->
-  <form id="dateRangeForm" onsubmit="updateDateRange(event)" style="max-width: 920px; margin: 0 auto 1rem auto;">
-    <label for="startDate" style="margin-right: 6px; font-weight: 600;">Start Date:</label>
+  <form id="dateRangeForm" onsubmit="updateDateRange(event)" style="max-width:920px; margin:0 auto 1rem auto;">
+    <label for="startDate" style="margin-right: 6px; font-weight:600;">Start Date:</label>
     <input type="date" id="startDate" required>
-    <label for="endDate" style="margin-left: 10px; margin-right: 6px; font-weight: 600;">End Date:</label>
+    <label for="endDate" style="margin-left:10px; margin-right:6px; font-weight:600;">End Date:</label>
     <input type="date" id="endDate" required>
     <button class="btn-secondary" type="submit" style="margin-top:4px;">Set Date Range</button>
   </form>
@@ -328,7 +315,6 @@
           <col style="width:8%;">
           <col style="width:8%;">
           <col style="width:7%;">
-          <col style="width:25%;" class="notes">
           <col style="width:7%;">
         </colgroup>
         <thead>
@@ -340,7 +326,6 @@
             <th>Actual Hours</th>
             <th>Over/Under %</th>
             <th>Deficiencies (#)</th>
-            <th class="notes">Notes</th>
             <th class="no-pdf">Actions</th>
           </tr>
         </thead>
@@ -360,7 +345,6 @@
           <col style="width:8%;">
           <col style="width:8%;">
           <col style="width:12%;">
-          <col style="width:20%;" class="notes">
           <col style="width:7%;">
         </colgroup>
         <thead>
@@ -372,7 +356,6 @@
             <th>Hours Worked</th>
             <th>Over/Under %</th>
             <th>Est. Completion</th>
-            <th class="notes">Notes</th>
             <th class="no-pdf">Actions</th>
           </tr>
         </thead>
@@ -452,7 +435,7 @@
         </div>
         <div class="form-group">
           <label for="completedNotes">Notes</label>
-          <textarea id="completedNotes" placeholder="e.g. Completed ahead of schedule..."></textarea>
+          <textarea id="completedNotes" placeholder="Enter detailed notes here..."></textarea>
         </div>
         <button type="submit" class="submit-btn btn-success">Add</button>
       </form>
@@ -491,7 +474,7 @@
         </div>
         <div class="form-group">
           <label for="ongoingNotes">Notes</label>
-          <textarea id="ongoingNotes" placeholder="e.g. Expect to finish early..."></textarea>
+          <textarea id="ongoingNotes" placeholder="Enter detailed notes here..."></textarea>
         </div>
         <button type="submit" class="submit-btn btn-success">Add</button>
       </form>
@@ -645,18 +628,23 @@
   </div>
 
   <script>
-    // ======================
-    // LOCAL STORAGE KEYS
-    // ======================
+    /* ======================
+       Global Variables & Local Storage Keys
+       ====================== */
     const LS_COMPLETED_KEY    = 'weekly_completed';
     const LS_ONGOING_KEY      = 'weekly_ongoing';
     const LS_DEFICIENCIES_KEY = 'weekly_deficiencies';
     const LS_NOTES_KEY        = 'weekly_notes';
     const LS_DATE_RANGE_KEY   = 'weekly_dateRange';
 
-    // ======================
-    // DATE HELPERS
-    // ======================
+    // Global variables for edit operations
+    let currentEditCompletedRow = null;
+    let currentEditOngoingRow = null;
+    let currentEditDeficiencyRow = null;
+
+    /* ======================
+       Date Helper Functions
+       ====================== */
     function parseLocalDate(dateString) {
       if (!dateString) return null;
       const [year, month, day] = dateString.split('-').map(Number);
@@ -673,10 +661,6 @@
       const d = parseLocalDate(dateString);
       return d ? formatDate(d) : '';
     }
-
-    // ======================
-    // OVER/UNDER UTILITY
-    // ======================
     function calculateOverUnder(bid, actual) {
       const b = parseFloat(bid), a = parseFloat(actual);
       if (isNaN(b) || isNaN(a) || b === 0) {
@@ -684,48 +668,50 @@
       }
       const diff = ((b - a) / b) * 100;
       const txt = diff.toFixed(2) + '%';
-      if (diff > 0) {
-        return { text: '+' + txt, className: 'under-budget' };
-      } else if (diff < 0) {
-        return { text: txt, className: 'over-budget' };
-      }
+      if (diff > 0) return { text: '+' + txt, className: 'under-budget' };
+      else if (diff < 0) return { text: txt, className: 'over-budget' };
       return { text: '0.00%', className: '' };
     }
 
-    // ======================
-    // UPDATE STATS & SAVE DATA
-    // ======================
+    /* ======================
+       Update Statistics & Save Data
+       ====================== */
     function updateStats() {
-      const cRows = document.querySelectorAll('#completedTable tbody tr');
-      document.getElementById('totalCompletedCount').innerText = cRows.length;
-      let sumBidCompleted = 0, sumActCompleted = 0;
-      cRows.forEach(row => {
-        const bidH = parseFloat(row.cells[3].innerText) || 0;
-        const actH = parseFloat(row.cells[4].innerText) || 0;
-        sumBidCompleted += bidH;
-        sumActCompleted += actH;
+      // Total Completed Inspections
+      const completedRows = document.querySelectorAll('#completedTable tbody tr.main-row');
+      document.getElementById('totalCompletedCount').innerText = completedRows.length;
+
+      // Sum bid and actual hours, and count sites with deficiencies
+      let totalBid = 0, totalActual = 0, deficiencySites = 0;
+      completedRows.forEach(row => {
+        const bid = parseFloat(row.cells[3].innerText) || 0;
+        const actual = parseFloat(row.cells[4].innerText) || 0;
+        totalBid += bid;
+        totalActual += actual;
+        if (parseInt(row.cells[6].innerText) > 0) {
+          deficiencySites++;
+        }
       });
-      const oRows = document.querySelectorAll('#ongoingTable tbody tr');
-      let sumBidOngoing = 0, sumWorkedOngoing = 0;
-      oRows.forEach(row => {
-        const bidH = parseFloat(row.cells[3].innerText) || 0;
-        const workedH = parseFloat(row.cells[4].innerText) || 0;
-        sumBidOngoing += bidH;
-        sumWorkedOngoing += workedH;
+      document.getElementById('totalBidHours').innerText = totalBid;
+      document.getElementById('totalHoursWorked').innerText = totalActual;
+      document.getElementById('defSiteCount').innerText = deficiencySites;
+
+      // Open Follow-up Actions from deficiency table (count rows with a non-empty follow-up date)
+      const defRows = document.querySelectorAll('#deficiencyTable tbody tr');
+      let followupCount = 0;
+      defRows.forEach(row => {
+        if (row.cells[3].innerText.trim() !== "") {
+          followupCount++;
+        }
       });
-      const totalBid = sumBidCompleted + sumBidOngoing;
-      const totalWorked = sumActCompleted + sumWorkedOngoing;
-      document.getElementById('totalBidHours').innerText = totalBid.toFixed(2);
-      document.getElementById('totalHoursWorked').innerText = totalWorked.toFixed(2);
-      const dRows = document.querySelectorAll('#deficiencyTable tbody tr');
-      document.getElementById('defSiteCount').innerText = dRows.length;
-      document.getElementById('openFollowupCount').innerText = dRows.length;
+      document.getElementById('openFollowupCount').innerText = followupCount;
+
       saveAllData();
     }
 
-    // ======================
-    // SET DATE RANGE
-    // ======================
+    /* ======================
+       Set Date Range
+       ====================== */
     function updateDateRange(e) {
       e.preventDefault();
       const s = document.getElementById('startDate').value;
@@ -735,14 +721,12 @@
       saveAllData();
     }
 
-    // ======================
-    // CLEAR ALL ENTRIES
-    // ======================
+    /* ======================
+       Clear All Entries
+       ====================== */
     function clearAllData() {
       if (!confirm("Are you sure you want to clear all entries?")) return;
-      document.querySelector('#completedTable tbody').innerHTML = '';
-      document.querySelector('#ongoingTable tbody').innerHTML = '';
-      document.querySelector('#deficiencyTable tbody').innerHTML = '';
+      document.querySelectorAll('tbody').forEach(tbody => tbody.innerHTML = '');
       document.getElementById('startDate').value = '';
       document.getElementById('endDate').value = '';
       document.getElementById('dateRangeDisplay').innerText = '[mm/dd/yyyy - mm/dd/yyyy]';
@@ -753,9 +737,9 @@
       localStorage.clear();
     }
 
-    // ======================
-    // DOWNLOAD PDF USING html2pdf.js (handles page-breaks)
-    // ======================
+    /* ======================
+       PDF Download using html2pdf.js
+       ====================== */
     async function downloadPDF() {
       document.querySelectorAll('.no-pdf').forEach(el => el.style.display = 'none');
       const pdfContainer = document.getElementById('pdfContainer');
@@ -771,9 +755,9 @@
       document.querySelectorAll('.no-pdf').forEach(el => el.style.display = '');
     }
 
-    // ======================
-    // GENERIC MODAL HELPERS
-    // ======================
+    /* ======================
+       Generic Modal Helpers
+       ====================== */
     function openModal(modalId, focusElementId) {
       const modal = document.getElementById(modalId);
       modal.classList.add('show');
@@ -786,9 +770,7 @@
       if (form) form.reset();
     }
     function outsideClickClose(e, modalId) {
-      if (e.target.id === modalId) {
-        closeModal(modalId);
-      }
+      if (e.target.id === modalId) closeModal(modalId);
     }
     document.addEventListener('keydown', function(e) {
       if (e.key === "Escape") {
@@ -796,61 +778,9 @@
       }
     });
 
-    // ======================
-    // EDIT MODALS: Open & Close
-    // ======================
-    let currentEditCompletedRow = null;
-    function openEditCompleted(btn) {
-      let row = btn.parentNode.parentNode;
-      currentEditCompletedRow = row;
-      const r = row.cells;
-      document.getElementById('editCompletedProjectNumber').value = r[0].innerText;
-      document.getElementById('editCompletedSiteName').value = r[1].innerText;
-      document.getElementById('editCompletedDate').value = r[2].getAttribute('data-raw') || '';
-      document.getElementById('editCompletedBidHours').value = r[3].innerText;
-      document.getElementById('editCompletedActualHours').value = r[4].innerText;
-      document.getElementById('editCompletedDeficienciesFound').value = r[6].innerText;
-      document.getElementById('editCompletedNotes').value = r[7].innerText;
-      openModal('editCompletedModal', 'editCompletedProjectNumber');
-    }
-    function openEditOngoing(btn) {
-      let row = btn.parentNode.parentNode;
-      currentEditOngoingRow = row;
-      const r = row.cells;
-      document.getElementById('editOngoingProjectNumber').value = r[0].innerText;
-      document.getElementById('editOngoingSiteName').value = r[1].innerText;
-      document.getElementById('editOngoingStartDate').value = r[2].getAttribute('data-raw') || '';
-      document.getElementById('editOngoingBidHours').value = r[3].innerText;
-      document.getElementById('editOngoingHoursWorked').value = r[4].innerText;
-      document.getElementById('editOngoingEstCompletion').value = r[6].getAttribute('data-raw') || '';
-      document.getElementById('editOngoingNotes').value = r[7].innerText;
-      openModal('editOngoingModal', 'editOngoingProjectNumber');
-    }
-    let currentEditDeficiencyRow = null;
-    function openEditDeficiency(btn) {
-      let row = btn.parentNode.parentNode;
-      currentEditDeficiencyRow = row;
-      const r = row.cells;
-      document.getElementById('editDefSiteName').value = r[0].innerText;
-      document.getElementById('editDefIsCritical').value = r[1].innerText;
-      document.getElementById('editDefNextSteps').value = r[2].innerText;
-      document.getElementById('editDefFollowUpDate').value = r[3].getAttribute('data-raw') || '';
-      document.getElementById('editDefAssignedTo').value = r[4].innerText;
-      openModal('editDeficiencyModal', 'editDefSiteName');
-    }
-
-    // ======================
-    // DELETE ROW
-    // ======================
-    function deleteRow(btn) {
-      const row = btn.parentNode.parentNode;
-      row.remove();
-      updateStats();
-    }
-
-    // ======================
-    // ADD: Completed Inspection
-    // ======================
+    /* ======================
+       Completed Inspections: Add, Edit, Delete
+       ====================== */
     function addCompleted(e) {
       e.preventDefault();
       const pn = document.getElementById('completedProjectNumber').value.trim();
@@ -861,35 +791,91 @@
       const df = document.getElementById('completedDeficienciesFound').value.trim();
       const notes = document.getElementById('completedNotes').value.trim();
       const tbody = document.querySelector('#completedTable tbody');
-      const row = tbody.insertRow();
-      row.insertCell().innerText = pn;
-      row.insertCell().innerText = sn;
-      let dateC = row.insertCell();
+
+      let mainRow = tbody.insertRow();
+      mainRow.classList.add("main-row");
+      mainRow.insertCell().innerText = pn;
+      mainRow.insertCell().innerText = sn;
+      let dateC = mainRow.insertCell();
       dateC.innerText = formatDateString(dt);
-      dateC.setAttribute('data-raw', dt);
-      row.insertCell().innerText = bh;
-      row.insertCell().innerText = ah;
+      dateC.setAttribute("data-raw", dt);
+      mainRow.insertCell().innerText = bh;
+      mainRow.insertCell().innerText = ah;
       const overUnder = calculateOverUnder(bh, ah);
-      let ouCell = row.insertCell();
+      let ouCell = mainRow.insertCell();
       ouCell.innerText = overUnder.text;
       if (overUnder.className) ouCell.classList.add(overUnder.className);
-      row.insertCell().innerText = df;
-      let notesCell = row.insertCell();
-      notesCell.innerText = notes;
-      notesCell.classList.add('notes');
-      const actionsCell = row.insertCell();
-      actionsCell.classList.add('no-pdf');
+      mainRow.insertCell().innerText = df;
+      let actionsCell = mainRow.insertCell();
+      actionsCell.classList.add("no-pdf");
       actionsCell.innerHTML = `
         <button class="btn-secondary" onclick="openEditCompleted(this)">Edit</button>
         <button class="btn-secondary" onclick="deleteRow(this)">Delete</button>
       `;
+      // Secondary row for notes
+      let notesRow = tbody.insertRow();
+      notesRow.classList.add("notes-row");
+      let notesCell = notesRow.insertCell();
+      notesCell.colSpan = mainRow.cells.length;
+      notesCell.innerText = notes;
       closeModal('completedModal');
       updateStats();
     }
 
-    // ======================
-    // ADD: Ongoing Inspection
-    // ======================
+    function openEditCompleted(btn) {
+      let mainRow = btn.parentNode.parentNode;
+      currentEditCompletedRow = mainRow;
+      let notesRow = mainRow.nextElementSibling;
+      document.getElementById('editCompletedProjectNumber').value = mainRow.cells[0].innerText;
+      document.getElementById('editCompletedSiteName').value = mainRow.cells[1].innerText;
+      document.getElementById('editCompletedDate').value = mainRow.cells[2].getAttribute('data-raw') || '';
+      document.getElementById('editCompletedBidHours').value = mainRow.cells[3].innerText;
+      document.getElementById('editCompletedActualHours').value = mainRow.cells[4].innerText;
+      document.getElementById('editCompletedDeficienciesFound').value = mainRow.cells[6].innerText;
+      document.getElementById('editCompletedNotes').value = notesRow.cells[0].innerText;
+      openModal('editCompletedModal', 'editCompletedProjectNumber');
+    }
+
+    function editCompleted(e) {
+      e.preventDefault();
+      if (!currentEditCompletedRow) return;
+      let mainRow = currentEditCompletedRow;
+      let notesRow = mainRow.nextElementSibling;
+      const pNum = document.getElementById('editCompletedProjectNumber').value.trim();
+      const sName = document.getElementById('editCompletedSiteName').value.trim();
+      const dt = document.getElementById('editCompletedDate').value;
+      const bid = document.getElementById('editCompletedBidHours').value.trim();
+      const actual = document.getElementById('editCompletedActualHours').value.trim();
+      const deficiencies = document.getElementById('editCompletedDeficienciesFound').value.trim();
+      mainRow.cells[0].innerText = pNum;
+      mainRow.cells[1].innerText = sName;
+      mainRow.cells[2].innerText = formatDateString(dt);
+      mainRow.cells[2].setAttribute("data-raw", dt);
+      mainRow.cells[3].innerText = bid;
+      mainRow.cells[4].innerText = actual;
+      const overUnder = calculateOverUnder(bid, actual);
+      mainRow.cells[5].innerText = overUnder.text;
+      mainRow.cells[5].className = '';
+      if (overUnder.className) mainRow.cells[5].classList.add(overUnder.className);
+      mainRow.cells[6].innerText = deficiencies;
+      notesRow.cells[0].innerText = document.getElementById('editCompletedNotes').value.trim();
+      closeModal('editCompletedModal');
+      updateStats();
+    }
+
+    function deleteRow(btn) {
+      let mainRow = btn.parentNode.parentNode;
+      let notesRow = mainRow.nextElementSibling;
+      mainRow.remove();
+      if (notesRow && notesRow.classList.contains("notes-row")) {
+        notesRow.remove();
+      }
+      updateStats();
+    }
+
+    /* ======================
+       Ongoing Inspections: Add, Edit, Delete
+       ====================== */
     function addOngoing(e) {
       e.preventDefault();
       const pn = document.getElementById('ongoingProjectNumber').value.trim();
@@ -900,37 +886,82 @@
       const estC = document.getElementById('ongoingEstCompletion').value;
       const notes = document.getElementById('ongoingNotes').value.trim();
       const tbody = document.querySelector('#ongoingTable tbody');
-      const row = tbody.insertRow();
-      row.insertCell().innerText = pn;
-      row.insertCell().innerText = sn;
-      let sdCell = row.insertCell();
+
+      let mainRow = tbody.insertRow();
+      mainRow.classList.add("main-row");
+      mainRow.insertCell().innerText = pn;
+      mainRow.insertCell().innerText = sn;
+      let sdCell = mainRow.insertCell();
       sdCell.innerText = formatDateString(startD);
-      sdCell.setAttribute('data-raw', startD);
-      row.insertCell().innerText = bh;
-      row.insertCell().innerText = hw;
+      sdCell.setAttribute("data-raw", startD);
+      mainRow.insertCell().innerText = bh;
+      mainRow.insertCell().innerText = hw;
       const overUnder = calculateOverUnder(bh, hw);
-      let ouCell = row.insertCell();
+      let ouCell = mainRow.insertCell();
       ouCell.innerText = overUnder.text;
       if (overUnder.className) ouCell.classList.add(overUnder.className);
-      let estCell = row.insertCell();
-      estCell.innerText = formatDateString(estC);
-      estCell.setAttribute('data-raw', estC);
-      let notesCell = row.insertCell();
-      notesCell.innerText = notes;
-      notesCell.classList.add('notes');
-      const actionsCell = row.insertCell();
-      actionsCell.classList.add('no-pdf');
+      mainRow.insertCell().innerText = formatDateString(estC);
+      mainRow.cells[mainRow.cells.length - 1].setAttribute("data-raw", estC);
+      let actionsCell = mainRow.insertCell();
+      actionsCell.classList.add("no-pdf");
       actionsCell.innerHTML = `
         <button class="btn-secondary" onclick="openEditOngoing(this)">Edit</button>
         <button class="btn-secondary" onclick="deleteRow(this)">Delete</button>
       `;
+      let notesRow = tbody.insertRow();
+      notesRow.classList.add("notes-row");
+      let notesCell = notesRow.insertCell();
+      notesCell.colSpan = mainRow.cells.length;
+      notesCell.innerText = notes;
       closeModal('ongoingModal');
       updateStats();
     }
 
-    // ======================
-    // ADD: Deficiency / Follow-up
-    // ======================
+    function openEditOngoing(btn) {
+      let mainRow = btn.parentNode.parentNode;
+      currentEditOngoingRow = mainRow;
+      let notesRow = mainRow.nextElementSibling;
+      document.getElementById('editOngoingProjectNumber').value = mainRow.cells[0].innerText;
+      document.getElementById('editOngoingSiteName').value = mainRow.cells[1].innerText;
+      document.getElementById('editOngoingStartDate').value = mainRow.cells[2].getAttribute('data-raw') || '';
+      document.getElementById('editOngoingBidHours').value = mainRow.cells[3].innerText;
+      document.getElementById('editOngoingHoursWorked').value = mainRow.cells[4].innerText;
+      document.getElementById('editOngoingEstCompletion').value = mainRow.cells[6].getAttribute('data-raw') || '';
+      document.getElementById('editOngoingNotes').value = notesRow.cells[0].innerText;
+      openModal('editOngoingModal', 'editOngoingProjectNumber');
+    }
+
+    function editOngoing(e) {
+      e.preventDefault();
+      if (!currentEditOngoingRow) return;
+      let mainRow = currentEditOngoingRow;
+      let notesRow = mainRow.nextElementSibling;
+      const pN = document.getElementById('editOngoingProjectNumber').value.trim();
+      const sN = document.getElementById('editOngoingSiteName').value.trim();
+      const sd = document.getElementById('editOngoingStartDate').value;
+      const bid = document.getElementById('editOngoingBidHours').value.trim();
+      const hoursWorked = document.getElementById('editOngoingHoursWorked').value.trim();
+      const estComp = document.getElementById('editOngoingEstCompletion').value;
+      mainRow.cells[0].innerText = pN;
+      mainRow.cells[1].innerText = sN;
+      mainRow.cells[2].innerText = formatDateString(sd);
+      mainRow.cells[2].setAttribute("data-raw", sd);
+      mainRow.cells[3].innerText = bid;
+      mainRow.cells[4].innerText = hoursWorked;
+      const overUnder = calculateOverUnder(bid, hoursWorked);
+      mainRow.cells[5].innerText = overUnder.text;
+      mainRow.cells[5].className = '';
+      if (overUnder.className) mainRow.cells[5].classList.add(overUnder.className);
+      mainRow.cells[6].innerText = formatDateString(estComp);
+      mainRow.cells[6].setAttribute("data-raw", estComp);
+      notesRow.cells[0].innerText = document.getElementById('editOngoingNotes').value.trim();
+      closeModal('editOngoingModal');
+      updateStats();
+    }
+
+    /* ======================
+       Deficiency / Follow-up: Add, Edit, Delete
+       ====================== */
     function addDeficiency(e) {
       e.preventDefault();
       const sn = document.getElementById('defSiteName').value.trim();
@@ -946,10 +977,10 @@
       row.insertCell().innerText = nxt;
       let followUpCell = row.insertCell();
       followUpCell.innerText = fud ? formatDateString(fud) : "";
-      if (fud) followUpCell.setAttribute('data-raw', fud);
+      if (fud) followUpCell.setAttribute("data-raw", fud);
       row.insertCell().innerText = assigned;
-      const actionsCell = row.insertCell();
-      actionsCell.classList.add('no-pdf');
+      let actionsCell = row.insertCell();
+      actionsCell.classList.add("no-pdf");
       actionsCell.innerHTML = `
         <button class="btn-secondary" onclick="openEditDeficiency(this)">Edit</button>
         <button class="btn-secondary" onclick="deleteRow(this)">Delete</button>
@@ -958,72 +989,17 @@
       updateStats();
     }
 
-    // ======================
-    // EDIT: Completed Inspection
-    // ======================
-    function editCompleted(e) {
-      e.preventDefault();
-      if (!currentEditCompletedRow) return;
-      const r = currentEditCompletedRow.cells;
-      const pNum = document.getElementById('editCompletedProjectNumber').value.trim();
-      const sName = document.getElementById('editCompletedSiteName').value.trim();
-      const dt = document.getElementById('editCompletedDate').value;
-      const bH = document.getElementById('editCompletedBidHours').value.trim();
-      const aH = document.getElementById('editCompletedActualHours').value.trim();
-      const def = document.getElementById('editCompletedDeficienciesFound').value.trim();
-      const nts = document.getElementById('editCompletedNotes').value.trim();
-      r[0].innerText = pNum;
-      r[1].innerText = sName;
-      r[2].innerText = formatDateString(dt);
-      r[2].setAttribute('data-raw', dt);
-      r[3].innerText = bH;
-      r[4].innerText = aH;
-      const overUnder = calculateOverUnder(bH, aH);
-      r[5].innerText = overUnder.text;
-      r[5].className = '';
-      if (overUnder.className) r[5].classList.add(overUnder.className);
-      r[6].innerText = def;
-      r[7].innerText = nts;
-      r[7].classList.add('notes');
-      closeModal('editCompletedModal');
-      updateStats();
+    function openEditDeficiency(btn) {
+      let row = btn.parentNode.parentNode;
+      currentEditDeficiencyRow = row;
+      document.getElementById('editDefSiteName').value = row.cells[0].innerText;
+      document.getElementById('editDefIsCritical').value = row.cells[1].innerText;
+      document.getElementById('editDefNextSteps').value = row.cells[2].innerText;
+      document.getElementById('editDefFollowUpDate').value = row.cells[3].getAttribute('data-raw') || '';
+      document.getElementById('editDefAssignedTo').value = row.cells[4].innerText;
+      openModal('editDeficiencyModal', 'editDefSiteName');
     }
 
-    // ======================
-    // EDIT: Ongoing Inspection
-    // ======================
-    function editOngoing(e) {
-      e.preventDefault();
-      if (!currentEditOngoingRow) return;
-      const r = currentEditOngoingRow.cells;
-      const pN = document.getElementById('editOngoingProjectNumber').value.trim();
-      const sN = document.getElementById('editOngoingSiteName').value.trim();
-      const sd = document.getElementById('editOngoingStartDate').value;
-      const bH = document.getElementById('editOngoingBidHours').value.trim();
-      const wH = document.getElementById('editOngoingHoursWorked').value.trim();
-      const eC = document.getElementById('editOngoingEstCompletion').value;
-      const nt = document.getElementById('editOngoingNotes').value.trim();
-      r[0].innerText = pN;
-      r[1].innerText = sN;
-      r[2].innerText = formatDateString(sd);
-      r[2].setAttribute('data-raw', sd);
-      r[3].innerText = bH;
-      r[4].innerText = wH;
-      const overUnder = calculateOverUnder(bH, wH);
-      r[5].innerText = overUnder.text;
-      r[5].className = '';
-      if (overUnder.className) r[5].classList.add(overUnder.className);
-      r[6].innerText = formatDateString(eC);
-      r[6].setAttribute('data-raw', eC);
-      r[7].innerText = nt;
-      r[7].classList.add('notes');
-      closeModal('editOngoingModal');
-      updateStats();
-    }
-
-    // ======================
-    // EDIT: Deficiency / Follow-up
-    // ======================
     function editDeficiency(e) {
       e.preventDefault();
       if (!currentEditDeficiencyRow) return;
@@ -1038,70 +1014,74 @@
       r[2].innerText = nxt;
       if (fDate) {
         r[3].innerText = formatDateString(fDate);
-        r[3].setAttribute('data-raw', fDate);
+        r[3].setAttribute("data-raw", fDate);
       } else {
         r[3].innerText = '';
-        r[3].removeAttribute('data-raw');
+        r[3].removeAttribute("data-raw");
       }
       r[4].innerText = assign;
       currentEditDeficiencyRow.classList.remove('critical-def');
-      if (crit === "Y") {
-        currentEditDeficiencyRow.classList.add('critical-def');
-      }
+      if (crit === "Y") currentEditDeficiencyRow.classList.add('critical-def');
       closeModal('editDeficiencyModal');
       updateStats();
     }
 
-    // ======================
-    // LOCAL STORAGE: SAVE & LOAD
-    // ======================
+    /* ======================
+       Save & Load Data from Local Storage
+       ====================== */
     function saveAllData() {
-      const completedRows = Array.from(document.querySelectorAll('#completedTable tbody tr')).map(row => {
-        let cells = row.cells;
-        return {
-          projectNumber: cells[0].innerText,
-          siteName: cells[1].innerText,
-          dateRaw: cells[2].getAttribute('data-raw'),
-          bidHours: cells[3].innerText,
-          actualHours: cells[4].innerText,
-          overUnder: cells[5].innerText,
-          deficiencies: cells[6].innerText,
-          notes: cells[7].innerText
-        };
+      let completedData = [];
+      document.querySelectorAll('#completedTable tbody tr.main-row').forEach(mainRow => {
+        let notesRow = mainRow.nextElementSibling;
+        completedData.push({
+          projectNumber: mainRow.cells[0].innerText,
+          siteName: mainRow.cells[1].innerText,
+          dateRaw: mainRow.cells[2].getAttribute("data-raw"),
+          bidHours: mainRow.cells[3].innerText,
+          actualHours: mainRow.cells[4].innerText,
+          overUnder: mainRow.cells[5].innerText,
+          deficiencies: mainRow.cells[6].innerText,
+          notes: notesRow ? notesRow.cells[0].innerText : ""
+        });
       });
-      localStorage.setItem(LS_COMPLETED_KEY, JSON.stringify(completedRows));
-      const ongoingRows = Array.from(document.querySelectorAll('#ongoingTable tbody tr')).map(row => {
-        let cells = row.cells;
-        return {
-          projectNumber: cells[0].innerText,
-          siteName: cells[1].innerText,
-          startDateRaw: cells[2].getAttribute('data-raw'),
-          bidHours: cells[3].innerText,
-          hoursWorked: cells[4].innerText,
-          overUnder: cells[5].innerText,
-          estCompletionRaw: cells[6].getAttribute('data-raw'),
-          notes: cells[7].innerText
-        };
+      localStorage.setItem(LS_COMPLETED_KEY, JSON.stringify(completedData));
+
+      let ongoingData = [];
+      document.querySelectorAll('#ongoingTable tbody tr.main-row').forEach(mainRow => {
+        let notesRow = mainRow.nextElementSibling;
+        ongoingData.push({
+          projectNumber: mainRow.cells[0].innerText,
+          siteName: mainRow.cells[1].innerText,
+          startDateRaw: mainRow.cells[2].getAttribute("data-raw"),
+          bidHours: mainRow.cells[3].innerText,
+          hoursWorked: mainRow.cells[4].innerText,
+          overUnder: mainRow.cells[5].innerText,
+          estCompletionRaw: mainRow.cells[6].getAttribute("data-raw"),
+          notes: notesRow ? notesRow.cells[0].innerText : ""
+        });
       });
-      localStorage.setItem(LS_ONGOING_KEY, JSON.stringify(ongoingRows));
-      const defRows = Array.from(document.querySelectorAll('#deficiencyTable tbody tr')).map(row => {
-        let cells = row.cells;
-        return {
-          siteName: cells[0].innerText,
-          isCritical: cells[1].innerText,
-          nextSteps: cells[2].innerText,
-          followUpRaw: cells[3].getAttribute('data-raw') || '',
-          assignedTo: cells[4].innerText
-        };
+      localStorage.setItem(LS_ONGOING_KEY, JSON.stringify(ongoingData));
+
+      let defData = [];
+      document.querySelectorAll('#deficiencyTable tbody tr').forEach(row => {
+        defData.push({
+          siteName: row.cells[0].innerText,
+          isCritical: row.cells[1].innerText,
+          nextSteps: row.cells[2].innerText,
+          followUpRaw: row.cells[3].getAttribute("data-raw") || '',
+          assignedTo: row.cells[4].innerText
+        });
       });
-      localStorage.setItem(LS_DEFICIENCIES_KEY, JSON.stringify(defRows));
-      const notesData = {
+      localStorage.setItem(LS_DEFICIENCIES_KEY, JSON.stringify(defData));
+
+      let notesData = {
         trendsNoticed: document.getElementById('trendsNoticed').value,
         resourceChallenges: document.getElementById('resourceChallenges').value,
         suggestedImprovements: document.getElementById('suggestedImprovements').value
       };
       localStorage.setItem(LS_NOTES_KEY, JSON.stringify(notesData));
-      const drData = {
+
+      let drData = {
         startDate: document.getElementById('startDate').value,
         endDate: document.getElementById('endDate').value
       };
@@ -1111,83 +1091,84 @@
     function loadAllData() {
       const completedJSON = localStorage.getItem(LS_COMPLETED_KEY);
       if (completedJSON) {
-        const rows = JSON.parse(completedJSON);
+        const data = JSON.parse(completedJSON);
         const tbody = document.querySelector('#completedTable tbody');
         tbody.innerHTML = '';
-        rows.forEach(item => {
-          const row = tbody.insertRow();
-          row.insertCell().innerText = item.projectNumber;
-          row.insertCell().innerText = item.siteName;
-          let dateC = row.insertCell();
+        data.forEach(item => {
+          let mainRow = tbody.insertRow();
+          mainRow.classList.add("main-row");
+          mainRow.insertCell().innerText = item.projectNumber;
+          mainRow.insertCell().innerText = item.siteName;
+          let dateC = mainRow.insertCell();
           dateC.innerText = formatDateString(item.dateRaw);
-          dateC.setAttribute('data-raw', item.dateRaw);
-          row.insertCell().innerText = item.bidHours;
-          row.insertCell().innerText = item.actualHours;
-          let overUnder = calculateOverUnder(item.bidHours, item.actualHours);
-          let ouCell = row.insertCell();
-          ouCell.innerText = overUnder.text;
-          if (overUnder.className) ouCell.classList.add(overUnder.className);
-          row.insertCell().innerText = item.deficiencies;
-          let notesCell = row.insertCell();
-          notesCell.innerText = item.notes;
-          notesCell.classList.add('notes');
-          const actionsCell = row.insertCell();
-          actionsCell.classList.add('no-pdf');
+          dateC.setAttribute("data-raw", item.dateRaw);
+          mainRow.insertCell().innerText = item.bidHours;
+          mainRow.insertCell().innerText = item.actualHours;
+          let ouCell = mainRow.insertCell();
+          ouCell.innerText = calculateOverUnder(item.bidHours, item.actualHours).text;
+          mainRow.insertCell().innerText = item.deficiencies;
+          let actionsCell = mainRow.insertCell();
+          actionsCell.classList.add("no-pdf");
           actionsCell.innerHTML = `
             <button class="btn-secondary" onclick="openEditCompleted(this)">Edit</button>
             <button class="btn-secondary" onclick="deleteRow(this)">Delete</button>
           `;
+          let notesRow = tbody.insertRow();
+          notesRow.classList.add("notes-row");
+          let notesCell = notesRow.insertCell();
+          notesCell.colSpan = mainRow.cells.length;
+          notesCell.innerText = item.notes;
         });
       }
       const ongoingJSON = localStorage.getItem(LS_ONGOING_KEY);
       if (ongoingJSON) {
-        const rows = JSON.parse(ongoingJSON);
+        const data = JSON.parse(ongoingJSON);
         const tbody = document.querySelector('#ongoingTable tbody');
         tbody.innerHTML = '';
-        rows.forEach(item => {
-          const row = tbody.insertRow();
-          row.insertCell().innerText = item.projectNumber;
-          row.insertCell().innerText = item.siteName;
-          let sdCell = row.insertCell();
+        data.forEach(item => {
+          let mainRow = tbody.insertRow();
+          mainRow.classList.add("main-row");
+          mainRow.insertCell().innerText = item.projectNumber;
+          mainRow.insertCell().innerText = item.siteName;
+          let sdCell = mainRow.insertCell();
           sdCell.innerText = formatDateString(item.startDateRaw);
-          sdCell.setAttribute('data-raw', item.startDateRaw);
-          row.insertCell().innerText = item.bidHours;
-          row.insertCell().innerText = item.hoursWorked;
-          let overUnder = calculateOverUnder(item.bidHours, item.hoursWorked);
-          let ouCell = row.insertCell();
-          ouCell.innerText = overUnder.text;
-          if (overUnder.className) ouCell.classList.add(overUnder.className);
-          let estCell = row.insertCell();
-          estCell.innerText = formatDateString(item.estCompletionRaw);
-          estCell.setAttribute('data-raw', item.estCompletionRaw);
-          let notesCell = row.insertCell();
-          notesCell.innerText = item.notes;
-          notesCell.classList.add('notes');
-          const actionsCell = row.insertCell();
-          actionsCell.classList.add('no-pdf');
+          sdCell.setAttribute("data-raw", item.startDateRaw);
+          mainRow.insertCell().innerText = item.bidHours;
+          mainRow.insertCell().innerText = item.hoursWorked;
+          let ouCell = mainRow.insertCell();
+          ouCell.innerText = calculateOverUnder(item.bidHours, item.hoursWorked).text;
+          mainRow.insertCell().innerText = formatDateString(item.estCompletionRaw);
+          mainRow.cells[mainRow.cells.length - 1].setAttribute("data-raw", item.estCompletionRaw);
+          let actionsCell = mainRow.insertCell();
+          actionsCell.classList.add("no-pdf");
           actionsCell.innerHTML = `
             <button class="btn-secondary" onclick="openEditOngoing(this)">Edit</button>
             <button class="btn-secondary" onclick="deleteRow(this)">Delete</button>
           `;
+          let notesRow = tbody.insertRow();
+          notesRow.classList.add("notes-row");
+          let notesCell = notesRow.insertCell();
+          notesCell.colSpan = mainRow.cells.length;
+          notesCell.innerText = item.notes;
         });
       }
       const defJSON = localStorage.getItem(LS_DEFICIENCIES_KEY);
       if (defJSON) {
-        const rows = JSON.parse(defJSON);
+        const data = JSON.parse(defJSON);
         const tbody = document.querySelector('#deficiencyTable tbody');
         tbody.innerHTML = '';
-        rows.forEach(item => {
-          const row = tbody.insertRow();
-          if (item.isCritical === "Y") row.classList.add('critical-def');
+        data.forEach(item => {
+          let row = tbody.insertRow();
+          if (item.isCritical === "Y") row.classList.add("critical-def");
           row.insertCell().innerText = item.siteName;
           row.insertCell().innerText = item.isCritical;
           row.insertCell().innerText = item.nextSteps;
           let followUpCell = row.insertCell();
           followUpCell.innerText = item.followUpRaw ? formatDateString(item.followUpRaw) : '';
-          if (item.followUpRaw) followUpCell.setAttribute('data-raw', item.followUpRaw);
+          if (item.followUpRaw) followUpCell.setAttribute("data-raw", item.followUpRaw);
           row.insertCell().innerText = item.assignedTo;
-          const actionsCell = row.insertCell();
-          actionsCell.classList.add('no-pdf');
+          let actionsCell = row.insertCell();
+          actionsCell.classList.add("no-pdf");
           actionsCell.innerHTML = `
             <button class="btn-secondary" onclick="openEditDeficiency(this)">Edit</button>
             <button class="btn-secondary" onclick="deleteRow(this)">Delete</button>
@@ -1213,7 +1194,6 @@
       }
       updateStats();
     }
-
     window.onload = loadAllData;
   </script>
 </body>
