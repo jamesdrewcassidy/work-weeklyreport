@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <title>Omni Technologies Weekly I&T Progress Report</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- jsPDF, html2canvas and html2pdf (CDN versions) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -16,12 +20,13 @@
       --secondary-color: #3d4a5c;
       --light-gray: #f4f7f6;
       --border-color: #dee2e6;
+      --border-color-light: #e9ecef;
       --text-color: #212529;
       --success-color: #28a745;
       --danger-color: #dc3545;
       --white-color: #fff;
-      --summary-bg: #eef2f5; /* Changed to light gray */
-      --summary-border: #d6dde4; /* Changed to light gray border */
+      --summary-bg: #eef2f5; 
+      --summary-border: #d6dde4;
     }
     * {
       box-sizing: border-box;
@@ -29,7 +34,7 @@
       padding: 0;
     }
     body {
-      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-family: 'Inter', "Helvetica Neue", Arial, sans-serif;
       color: var(--text-color);
       background-color: var(--light-gray);
       margin: 20px;
@@ -57,6 +62,7 @@
       padding: 10px 18px;
       transition: all 0.2s ease;
       margin: 0 8px 12px 0;
+      font-family: 'Inter', sans-serif;
     }
     button:hover {
       transform: translateY(-2px);
@@ -98,11 +104,13 @@
       color: var(--primary-color);
       border-bottom: 2px solid var(--primary-color);
       padding-bottom: 8px;
+      font-weight: 600;
     }
     h3 {
       font-size: 1.3rem;
       color: #1c2b33;
       margin-bottom: 1.5rem;
+      font-weight: 600;
     }
     /* ========== UI SECTIONS ========== */
     .top-actions, .add-buttons {
@@ -122,7 +130,8 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     #dateRangeForm label { font-weight: 600; font-size: 1rem; }
-    #dateRangeForm input[type="date"] { padding: 8px; border-radius: 5px; border: 1px solid var(--border-color); }
+    #dateRangeForm input[type="date"] { padding: 8px; border-radius: 5px; border: 1px solid var(--border-color); font-family: 'Inter', sans-serif; }
+    
     /* ========== REPORT SUMMARY ========== */
     #reportSummary {
       background-color: var(--summary-bg);
@@ -138,7 +147,8 @@
       margin-bottom: 0;
       font-size: 1.05rem;
     }
-    #reportSummary strong { color: var(--secondary-color); }
+    #reportSummary strong { color: var(--secondary-color); font-weight: 600; }
+    
     /* ========== TABLES ========== */
     table {
       width: 100%;
@@ -160,26 +170,24 @@
       word-wrap: break-word;
     }
     tbody tr:nth-child(even) { background-color: #fdfdfd; }
-    /* Notes row */
     .notes-row td {
       background-color: #fafafa;
       padding: 12px;
       font-style: italic;
       color: #555;
-      border-top: 2px solid #e9e9e9;
+      border-top: 2px solid var(--border-color-light);
       font-size: 0.95rem;
     }
-    /* Completed Table Compact Layout */
     .completed-info-cell { width: 45%; }
     .completed-info-cell p { margin: 0 0 8px 0; font-size: 1.05rem; }
-    .completed-info-cell strong { color: var(--secondary-color); }
+    .completed-info-cell strong { color: var(--secondary-color); font-weight: 600; }
     .completed-history-cell { width: 55%; }
+    .has-deficiencies { font-weight: 700; color: var(--primary-color); }
 
-    /* Hour History Table Styling */
     .history-table { margin: 0; font-size: 1rem; }
-    .history-table th { background-color: #e9ecef; padding: 10px; }
+    .history-table th { background-color: #e9ecef; padding: 10px; font-weight: 600; }
     .history-table td { padding: 8px 10px; }
-    .history-table-modal { font-size: 0.9rem; } /* In modal */
+    .history-table-modal { font-size: 0.9rem; }
     
     .over-budget { color: var(--danger-color); font-weight: bold; }
     .under-budget { color: var(--success-color); font-weight: bold; }
@@ -209,8 +217,10 @@
     .form-group label { display: block; font-weight: 600; margin-bottom: 5px; }
     input[type="text"], input[type="date"], input[type="number"], textarea, select {
       width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem;
+      font-family: 'Inter', sans-serif;
     }
     .submit-btn { margin-top: 15px; width: 100%; font-size: 1.1rem; padding: 12px; }
+    
     /* ========== OBSERVATIONS/NOTES SECTION ========== */
     .observations-section { margin-bottom: 2rem; }
     .observations-section textarea { height: 120px; resize: vertical; white-space: pre-wrap; font-size: 1rem; }
@@ -218,24 +228,36 @@
         display: none; white-space: pre-wrap; word-wrap: break-word; padding: 10px;
         border: 1px solid #eee; background-color: #fcfcfc; border-radius: 5px;
     }
+    
     /* ========== PDF-SPECIFIC STYLES ========== */
     body.pdf-render-mode { background-color: var(--white-color); margin: 0; font-size: 10pt; }
     body.pdf-render-mode .page-container { max-width: 100%; }
-    body.pdf-render-mode #pdfContainer { box-shadow: none; border-radius: 0; padding: 15px; }
+    body.pdf-render-mode #pdfContainer { box-shadow: none; border-radius: 0; padding: 20px; }
     body.pdf-render-mode .no-pdf { display: none !important; }
     body.pdf-render-mode .report-header { margin-bottom: 1rem; }
     body.pdf-render-mode .report-logo { max-height: 50px; }
     body.pdf-render-mode h1 { font-size: 20pt; }
-    body.pdf-render-mode h2 { font-size: 15pt; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+    body.pdf-render-mode h2 { font-size: 15pt; margin-top: 1.5rem; margin-bottom: 0.8rem; }
+    body.pdf-render-mode #reportSummary { 
+      grid-template-columns: 1fr 1fr 1fr; 
+      font-size: 9pt; 
+      padding: 12px; 
+      gap: 12px;
+      background-color: var(--summary-bg);
+      border: 1px solid var(--summary-border);
+    }
     body.pdf-render-mode table { font-size: 9pt; page-break-inside: avoid; }
-    body.pdf-render-mode th, body.pdf-render-mode td { padding: 6px; }
-    body.pdf-render-mode .completed-info-cell p { font-size: 9pt; }
+    body.pdf-render-mode th, body.pdf-render-mode td { 
+      padding: 7px;
+      border: 1px solid var(--border-color-light);
+    }
+    body.pdf-render-mode .completed-info-cell p { font-size: 9pt; margin-bottom: 4px; }
     body.pdf-render-mode .notes-row td { padding: 6px; font-size: 8.5pt; }
     body.pdf-render-mode .history-table { font-size: 8.5pt; }
     body.pdf-render-mode .history-table th, body.pdf-render-mode .history-table td { padding: 5px; }
+    body.pdf-render-mode .has-deficiencies { color: #c8102e; }
     body.pdf-render-mode .observations-section textarea { display: none; }
     body.pdf-render-mode .observations-section .pdf-text { display: block; font-size: 10pt; }
-    body.pdf-render-mode #reportSummary { grid-template-columns: 1fr 1fr 1fr; font-size: 10pt; padding: 15px; }
   </style>
 </head>
 <body>
@@ -265,7 +287,8 @@
   <!-- ========== PDF CONTAINER (REPORTING ELEMENTS) ========== -->
   <div id="pdfContainer">
     <div class="report-header">
-        <img src="https://lh3.googleusercontent.com/p/AF1QipPDBEMV5-fUJnHA9n6iGT9uyqTEL3799aOA-G8M=s680-w680-h510-rw" alt="Omni Technologies Logo" class="report-logo no-pdf">
+        <!-- The 'no-pdf' class was removed from the logo to ensure it appears in the PDF report -->
+        <img src="https://lh3.googleusercontent.com/p/AF1QipPDBEMV5-fUJnHA9n6iGT9uyqTEL3799aOA-G8M=s680-w680-h510-rw" alt="Omni Technologies Logo" class="report-logo">
         <h1>Omni Technologies Weekly I&T Progress Report</h1>
     </div>
     
@@ -361,7 +384,6 @@
           <input type="number" id="completedDeficienciesFound" placeholder="e.g. 2" required min="0" />
         </div>
         
-        <!-- Hour History Section -->
         <h4>Hour History</h4>
         <table class="history-table history-table-modal">
             <thead><tr><th>Year</th><th>Bid Hours</th><th>Actual Hours</th><th class="no-pdf"></th></tr></thead>
@@ -420,14 +442,27 @@
     </div>
   </div>
 
+  <!-- Confirmation Modal -->
+  <div id="confirmModal" class="modal">
+    <div class="modal-content" style="max-width: 450px;">
+      <h3 id="confirmModalTitle" style="color: var(--primary-color);">Confirmation</h3>
+      <p id="confirmModalText" style="margin: 20px 0; font-size: 1.1rem;"></p>
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button id="confirmCancelBtn" class="btn-secondary">Cancel</button>
+        <button id="confirmOkBtn" class="btn-danger">Confirm</button>
+      </div>
+    </div>
+  </div>
+
 <script>
     /* ======================
        Global Variables & Local Storage Keys
        ====================== */
-    const LS_COMPLETED_KEY  = 'weekly_report_completed_v3';
-    const LS_ONGOING_KEY    = 'weekly_report_ongoing_v3';
-    const LS_NOTES_KEY      = 'weekly_report_notes_v3';
-    const LS_DATE_RANGE_KEY = 'weekly_report_dateRange_v3';
+    const LS_COMPLETED_KEY  = 'weekly_report_completed_v4';
+    const LS_ONGOING_KEY    = 'weekly_report_ongoing_v4';
+    const LS_NOTES_KEY      = 'weekly_report_notes_v4';
+    const LS_DATE_RANGE_KEY = 'weekly_report_dateRange_v4';
+    let confirmCallback = null;
 
     /* ======================
        Date & Calculation Helper Functions
@@ -461,9 +496,9 @@
       const diff = ((a - b) / b) * 100;
       const txt = diff.toFixed(1) + '%';
       
-      if (diff > 0) return { text: `+${txt}`, className: 'over-budget' };
-      if (diff < 0) return { text: txt, className: 'under-budget' };
-      return { text: '0.0%', className: '' };
+      if (diff > 5) return { text: `+${txt}`, className: 'over-budget' };
+      if (diff < -5) return { text: txt, className: 'under-budget' };
+      return { text: (diff > 0 ? '+' : '') + txt, className: '' };
     }
 
     /* ======================
@@ -485,11 +520,14 @@
 
             let infoCell = mainRow.insertCell();
             infoCell.classList.add('completed-info-cell');
+            
+            // Added a span with a special class for deficiencies to make it stand out
+            const deficienciesClass = parseInt(item.deficiencies) > 0 ? 'has-deficiencies' : '';
             infoCell.innerHTML = `
                 <p><strong>Project #:</strong> ${item.projectNumber}</p>
                 <p><strong>Site Name:</strong> ${item.siteName}</p>
                 <p><strong>Date Completed:</strong> ${formatDate(parseLocalDate(item.dateCompleted))}</p>
-                <p><strong>Deficiencies:</strong> ${item.deficiencies}</p>
+                <p><strong>Deficiencies:</strong> <span class="${deficienciesClass}">${item.deficiencies}</span></p>
             `;
 
             let historyCell = mainRow.insertCell();
@@ -516,7 +554,8 @@
     function generateHistoryTableHTML(history) {
         if (!history || history.length === 0) return '<p style="text-align:center; color:#888;">No hour history recorded.</p>';
         let table = '<table class="history-table"><thead><tr><th>Year</th><th>Bid</th><th>Actual</th><th>+/- %</th></tr></thead><tbody>';
-        history.forEach(h => {
+        // Sort history by year descending for display
+        [...history].sort((a,b) => b.year - a.year).forEach(h => {
             const ou = calculateOverUnder(h.bid, h.actual);
             table += `<tr><td>${h.year}</td><td>${h.bid}</td><td>${h.actual}</td><td class="${ou.className}">${ou.text}</td></tr>`;
         });
@@ -533,7 +572,6 @@
 
             let mainRow = tbody.insertRow();
             mainRow.dataset.id = item.id;
-            mainRow.classList.add("main-row");
 
             mainRow.insertCell().textContent = item.projectNumber;
             mainRow.insertCell().textContent = item.siteName;
@@ -548,8 +586,8 @@
             let actionsCell = mainRow.insertCell();
             actionsCell.classList.add("no-pdf");
             actionsCell.innerHTML = `
-                <button class="btn-secondary" onclick="openEditOngoing('${item.id}')">Edit</button>
-                <button class="btn-danger" onclick="deleteItem(LS_ONGOING_KEY, '${item.id}')">Delete</button>
+                <button class="btn-secondary" onclick="openEditOngoing('${item.id}')" style="margin-bottom: 5px; width:100%">Edit</button>
+                <button class="btn-danger" onclick="deleteItem(LS_ONGOING_KEY, '${item.id}')" style="width:100%">Delete</button>
             `;
              if (item.notes) {
                 let notesRow = tbody.insertRow();
@@ -570,8 +608,13 @@
 
       let totalBid = 0, totalActual = 0;
       completedData.forEach(item => {
-        if(item.hoursHistory.length > 0){
-            const latest = item.hoursHistory[item.hoursHistory.length - 1];
+        if(item.hoursHistory && item.hoursHistory.length > 0){
+            // *** BUG FIX ***
+            // This now finds the history entry with the highest (most recent) year
+            // instead of just taking the last one in the array.
+            const latest = item.hoursHistory.reduce((latestEntry, currentEntry) => {
+                return parseInt(currentEntry.year) > parseInt(latestEntry.year) ? currentEntry : latestEntry;
+            });
             totalBid += parseFloat(latest.bid) || 0;
             totalActual += parseFloat(latest.actual) || 0;
         }
@@ -599,10 +642,12 @@
        PDF Download
        ====================== */
     async function downloadPDF() {
+      // Prepare text fields for PDF rendering
       document.getElementById('trendsNoticedPdf').textContent = document.getElementById('trendsNoticed').value;
       document.getElementById('resourceChallengesPdf').textContent = document.getElementById('resourceChallenges').value;
       document.getElementById('suggestedImprovementsPdf').textContent = document.getElementById('suggestedImprovements').value;
       
+      // Add a special class to the body for PDF-specific styling
       document.body.classList.add('pdf-render-mode');
 
       const pdfContainer = document.getElementById('pdfContainer');
@@ -615,8 +660,10 @@
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
+      // Generate and save the PDF
       await html2pdf().set(opt).from(pdfContainer).save();
       
+      // Clean up by removing the special class
       document.body.classList.remove('pdf-render-mode');
     }
     
@@ -646,33 +693,16 @@
     function closeModal(modalId) {
       const modal = document.getElementById(modalId);
       modal.classList.remove('show');
-    }
-
-    document.addEventListener('keydown', function(e) {
-      if (e.key === "Escape") {
-        document.querySelectorAll('.modal.show').forEach(modal => closeModal(modal.id));
+      if (modalId === 'confirmModal') {
+        confirmCallback = null; // Clear callback when confirmation is cancelled
       }
-    });
-
-    function saveItem(key, item) {
-        let data = JSON.parse(localStorage.getItem(key) || '[]');
-        const existingIndex = data.findIndex(d => d.id === item.id);
-
-        if (existingIndex > -1) {
-            data[existingIndex] = item;
-        } else {
-            data.push(item);
-        }
-        localStorage.setItem(key, JSON.stringify(data));
-        renderAllTables();
     }
-
-    function deleteItem(key, id) {
-        if (!confirm("Are you sure you want to delete this entry?")) return;
-        let data = JSON.parse(localStorage.getItem(key) || '[]');
-        const updatedData = data.filter(d => d.id !== id);
-        localStorage.setItem(key, JSON.stringify(updatedData));
-        renderAllTables();
+    
+    function showConfirm(text, onConfirm) {
+        document.getElementById('confirmModalText').textContent = text;
+        confirmCallback = onConfirm;
+        const modal = document.getElementById('confirmModal');
+        modal.classList.add('show');
     }
 
     /* ======================
@@ -731,8 +761,9 @@
     function addHourHistoryRow(year = '', bid = '', actual = '') {
         const tbody = document.getElementById('hourHistoryBody');
         const row = tbody.insertRow();
+        const currentYear = new Date().getFullYear();
         row.innerHTML = `
-            <td><input type="number" class="history-year" placeholder="YYYY" value="${year}" required></td>
+            <td><input type="number" class="history-year" placeholder="YYYY" value="${year || currentYear}" required></td>
             <td><input type="number" step="0.1" class="history-bid" placeholder="e.g. 40" value="${bid}" required></td>
             <td><input type="number" step="0.1" class="history-actual" placeholder="e.g. 42.5" value="${actual}" required></td>
             <td class="no-pdf"><button type="button" class="btn-danger" style="padding:4px 8px;" onclick="this.closest('tr').remove()">X</button></td>
@@ -777,24 +808,58 @@
     }
     
     /* ======================
-       Initialization & Data Loading
+       Data Management
        ====================== */
+    function saveItem(key, item) {
+        let data = JSON.parse(localStorage.getItem(key) || '[]');
+        const existingIndex = data.findIndex(d => d.id === item.id);
+
+        if (existingIndex > -1) {
+            data[existingIndex] = item;
+        } else {
+            data.push(item);
+        }
+        localStorage.setItem(key, JSON.stringify(data));
+        renderAllTables();
+    }
+    
+    function deleteItem(key, id) {
+        showConfirm("Are you sure you want to delete this entry?", () => {
+            let data = JSON.parse(localStorage.getItem(key) || '[]');
+            const updatedData = data.filter(d => d.id !== id);
+            localStorage.setItem(key, JSON.stringify(updatedData));
+            renderAllTables();
+        });
+    }
+    
     function clearAllData() {
-      if (!confirm("Are you sure you want to clear ALL report data? This action cannot be undone.")) return;
-      localStorage.removeItem(LS_COMPLETED_KEY);
-      localStorage.removeItem(LS_ONGOING_KEY);
-      localStorage.removeItem(LS_NOTES_KEY);
-      localStorage.removeItem(LS_DATE_RANGE_KEY);
-      document.getElementById('trendsNoticed').value = '';
-      document.getElementById('resourceChallenges').value = '';
-      document.getElementById('suggestedImprovements').value = '';
-      document.getElementById('startDate').value = '';
-      document.getElementById('endDate').value = '';
-      updateDateRange();
-      renderAllTables();
+        showConfirm("Are you sure you want to clear ALL report data? This action cannot be undone.", () => {
+            localStorage.removeItem(LS_COMPLETED_KEY);
+            localStorage.removeItem(LS_ONGOING_KEY);
+            localStorage.removeItem(LS_NOTES_KEY);
+            localStorage.removeItem(LS_DATE_RANGE_KEY);
+            ['trendsNoticed', 'resourceChallenges', 'suggestedImprovements', 'startDate', 'endDate'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            updateDateRange();
+            renderAllTables();
+        });
+    }
+    
+    function saveNotes() {
+        const notesData = {
+            trendsNoticed: document.getElementById('trendsNoticed').value,
+            resourceChallenges: document.getElementById('resourceChallenges').value,
+            suggestedImprovements: document.getElementById('suggestedImprovements').value
+        };
+        localStorage.setItem(LS_NOTES_KEY, JSON.stringify(notesData));
     }
 
-    function loadAllData() {
+    /* ======================
+       Initialization & Event Listeners
+       ====================== */
+    function initialize() {
+      // Load data from localStorage
       const drJSON = localStorage.getItem(LS_DATE_RANGE_KEY);
       if (drJSON) {
         const dr = JSON.parse(drJSON);
@@ -809,23 +874,32 @@
         document.getElementById('resourceChallenges').value = n.resourceChallenges || '';
         document.getElementById('suggestedImprovements').value = n.suggestedImprovements || '';
       }
+
+      // Add event listeners
       document.getElementById('trendsNoticed').addEventListener('input', saveNotes);
       document.getElementById('resourceChallenges').addEventListener('input', saveNotes);
       document.getElementById('suggestedImprovements').addEventListener('input', saveNotes);
+      
+      // Confirmation modal listeners
+      document.getElementById('confirmCancelBtn').addEventListener('click', () => closeModal('confirmModal'));
+      document.getElementById('confirmOkBtn').addEventListener('click', () => {
+        if (typeof confirmCallback === 'function') {
+            confirmCallback();
+        }
+        closeModal('confirmModal');
+      });
+      
+      // Close modals with Escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === "Escape") {
+          document.querySelectorAll('.modal.show').forEach(modal => closeModal(modal.id));
+        }
+      });
 
       renderAllTables();
     }
-    
-    function saveNotes() {
-        const notesData = {
-            trendsNoticed: document.getElementById('trendsNoticed').value,
-            resourceChallenges: document.getElementById('resourceChallenges').value,
-            suggestedImprovements: document.getElementById('suggestedImprovements').value
-        };
-        localStorage.setItem(LS_NOTES_KEY, JSON.stringify(notesData));
-    }
 
-    window.onload = loadAllData;
+    window.onload = initialize;
 
 </script>
 </body>
