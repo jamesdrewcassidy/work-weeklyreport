@@ -22,6 +22,7 @@
       --border-color: #dee2e6;
       --border-color-light: #e9ecef;
       --text-color: #212529;
+      --text-color-light: #6c757d;
       --success-color: #28a745;
       --danger-color: #dc3545;
       --white-color: #fff;
@@ -100,14 +101,14 @@
     h2 {
       margin-top: 2.5rem;
       margin-bottom: 1.2rem;
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       color: var(--primary-color);
       border-bottom: 2px solid var(--primary-color);
       padding-bottom: 8px;
       font-weight: 600;
     }
     h3 {
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       color: #1c2b33;
       margin-bottom: 1.5rem;
       font-weight: 600;
@@ -145,7 +146,7 @@
     }
     #reportSummary p {
       margin-bottom: 0;
-      font-size: 1.05rem;
+      font-size: 1.1rem;
     }
     #reportSummary strong { color: var(--secondary-color); font-weight: 600; }
     
@@ -154,32 +155,38 @@
       width: 100%;
       border-collapse: collapse;
       margin: 15px 0 25px 0;
-      font-size: 1rem;
+      font-size: 1.05rem;
     }
     table thead th {
       background-color: #eef2f5;
-      padding: 12px;
+      padding: 14px;
       border: 1px solid var(--border-color);
       text-align: left;
       font-weight: 600;
     }
     th, td {
       border: 1px solid var(--border-color);
-      padding: 12px;
+      padding: 14px;
       vertical-align: top;
       word-wrap: break-word;
     }
     tbody tr:nth-child(even) { background-color: #fdfdfd; }
     .notes-row td {
       background-color: #fafafa;
-      padding: 12px;
+      padding: 14px;
       font-style: italic;
       color: #555;
       border-top: 2px solid var(--border-color-light);
-      font-size: 0.95rem;
+      font-size: 1rem;
+    }
+    .empty-row td {
+        padding: 25px;
+        text-align: center;
+        color: var(--text-color-light);
+        font-style: italic;
     }
     .completed-info-cell { width: 45%; }
-    .completed-info-cell p { margin: 0 0 8px 0; font-size: 1.05rem; }
+    .completed-info-cell p { margin: 0 0 10px 0; font-size: 1.1rem; }
     .completed-info-cell strong { color: var(--secondary-color); font-weight: 600; }
     .completed-history-cell { width: 55%; }
     .has-deficiencies { font-weight: 700; color: var(--primary-color); }
@@ -202,7 +209,7 @@
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
     .modal-content {
-      background-color: var(--white-color); padding: 25px; border-radius: 8px;
+      background-color: var(--white-color); padding: 30px; border-radius: 8px;
       width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;
       position: relative; animation: slideDown 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     }
@@ -223,7 +230,7 @@
     
     /* ========== OBSERVATIONS/NOTES SECTION ========== */
     .observations-section { margin-bottom: 2rem; }
-    .observations-section textarea { height: 120px; resize: vertical; white-space: pre-wrap; font-size: 1rem; }
+    .observations-section textarea { height: 120px; resize: vertical; white-space: pre-wrap; font-size: 1.05rem; }
     .observations-section .pdf-text {
         display: none; white-space: pre-wrap; word-wrap: break-word; padding: 10px;
         border: 1px solid #eee; background-color: #fcfcfc; border-radius: 5px;
@@ -240,20 +247,21 @@
     body.pdf-render-mode h2 { font-size: 15pt; margin-top: 1.5rem; margin-bottom: 0.8rem; }
     body.pdf-render-mode #reportSummary { 
       grid-template-columns: 1fr 1fr 1fr; 
-      font-size: 9pt; 
+      font-size: 10pt;
       padding: 12px; 
       gap: 12px;
       background-color: var(--summary-bg);
       border: 1px solid var(--summary-border);
     }
-    body.pdf-render-mode table { font-size: 9pt; page-break-inside: avoid; }
+    body.pdf-render-mode table { font-size: 9.5pt; page-break-inside: avoid; }
     body.pdf-render-mode th, body.pdf-render-mode td { 
-      padding: 7px;
+      padding: 8px;
       border: 1px solid var(--border-color-light);
     }
-    body.pdf-render-mode .completed-info-cell p { font-size: 9pt; margin-bottom: 4px; }
-    body.pdf-render-mode .notes-row td { padding: 6px; font-size: 8.5pt; }
-    body.pdf-render-mode .history-table { font-size: 8.5pt; }
+    body.pdf-render-mode .completed-info-cell p { font-size: 9.5pt; margin-bottom: 5px; }
+    body.pdf-render-mode .notes-row td { padding: 7px; font-size: 9pt; }
+    body.pdf-render-mode .empty-row td { padding: 15px; font-size: 9pt; }
+    body.pdf-render-mode .history-table { font-size: 9pt; }
     body.pdf-render-mode .history-table th, body.pdf-render-mode .history-table td { padding: 5px; }
     body.pdf-render-mode .has-deficiencies { color: #c8102e; }
     body.pdf-render-mode .observations-section textarea { display: none; }
@@ -287,7 +295,6 @@
   <!-- ========== PDF CONTAINER (REPORTING ELEMENTS) ========== -->
   <div id="pdfContainer">
     <div class="report-header">
-        <!-- The 'no-pdf' class was removed from the logo to ensure it appears in the PDF report -->
         <img src="https://lh3.googleusercontent.com/p/AF1QipPDBEMV5-fUJnHA9n6iGT9uyqTEL3799aOA-G8M=s680-w680-h510-rw" alt="Omni Technologies Logo" class="report-logo">
         <h1>Omni Technologies Weekly I&T Progress Report</h1>
     </div>
@@ -458,10 +465,10 @@
     /* ======================
        Global Variables & Local Storage Keys
        ====================== */
-    const LS_COMPLETED_KEY  = 'weekly_report_completed_v4';
-    const LS_ONGOING_KEY    = 'weekly_report_ongoing_v4';
-    const LS_NOTES_KEY      = 'weekly_report_notes_v4';
-    const LS_DATE_RANGE_KEY = 'weekly_report_dateRange_v4';
+    const LS_COMPLETED_KEY  = 'weekly_report_completed_v5';
+    const LS_ONGOING_KEY    = 'weekly_report_ongoing_v5';
+    const LS_NOTES_KEY      = 'weekly_report_notes_v5';
+    const LS_DATE_RANGE_KEY = 'weekly_report_dateRange_v5';
     let confirmCallback = null;
 
     /* ======================
@@ -496,9 +503,9 @@
       const diff = ((a - b) / b) * 100;
       const txt = diff.toFixed(1) + '%';
       
-      if (diff > 5) return { text: `+${txt}`, className: 'over-budget' };
-      if (diff < -5) return { text: txt, className: 'under-budget' };
-      return { text: (diff > 0 ? '+' : '') + txt, className: '' };
+      if (diff > 0) return { text: `+${txt}`, className: 'over-budget' };
+      if (diff < 0) return { text: txt, className: 'under-budget' };
+      return { text: '0.0%', className: '' };
     }
 
     /* ======================
@@ -514,6 +521,10 @@
         const data = JSON.parse(localStorage.getItem(LS_COMPLETED_KEY) || '[]');
         const tbody = document.querySelector('#completedTable tbody');
         tbody.innerHTML = '';
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr class="empty-row"><td colspan="3">No completed inspections have been added.</td></tr>`;
+            return;
+        }
         data.forEach(item => {
             let mainRow = tbody.insertRow();
             mainRow.dataset.id = item.id;
@@ -521,7 +532,6 @@
             let infoCell = mainRow.insertCell();
             infoCell.classList.add('completed-info-cell');
             
-            // Added a span with a special class for deficiencies to make it stand out
             const deficienciesClass = parseInt(item.deficiencies) > 0 ? 'has-deficiencies' : '';
             infoCell.innerHTML = `
                 <p><strong>Project #:</strong> ${item.projectNumber}</p>
@@ -552,9 +562,8 @@
     }
     
     function generateHistoryTableHTML(history) {
-        if (!history || history.length === 0) return '<p style="text-align:center; color:#888;">No hour history recorded.</p>';
+        if (!history || history.length === 0) return `<p style="text-align:center; color:${'var(--text-color-light)'};">No hour history recorded.</p>`;
         let table = '<table class="history-table"><thead><tr><th>Year</th><th>Bid</th><th>Actual</th><th>+/- %</th></tr></thead><tbody>';
-        // Sort history by year descending for display
         [...history].sort((a,b) => b.year - a.year).forEach(h => {
             const ou = calculateOverUnder(h.bid, h.actual);
             table += `<tr><td>${h.year}</td><td>${h.bid}</td><td>${h.actual}</td><td class="${ou.className}">${ou.text}</td></tr>`;
@@ -567,6 +576,10 @@
         const data = JSON.parse(localStorage.getItem(LS_ONGOING_KEY) || '[]');
         const tbody = document.querySelector('#ongoingTable tbody');
         tbody.innerHTML = '';
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr class="empty-row"><td colspan="8">No ongoing inspections have been added.</td></tr>`;
+            return;
+        }
         data.forEach(item => {
             const overUnder = calculateOverUnder(item.bidHours, item.hoursWorked);
 
@@ -609,9 +622,6 @@
       let totalBid = 0, totalActual = 0;
       completedData.forEach(item => {
         if(item.hoursHistory && item.hoursHistory.length > 0){
-            // *** BUG FIX ***
-            // This now finds the history entry with the highest (most recent) year
-            // instead of just taking the last one in the array.
             const latest = item.hoursHistory.reduce((latestEntry, currentEntry) => {
                 return parseInt(currentEntry.year) > parseInt(latestEntry.year) ? currentEntry : latestEntry;
             });
@@ -642,12 +652,10 @@
        PDF Download
        ====================== */
     async function downloadPDF() {
-      // Prepare text fields for PDF rendering
       document.getElementById('trendsNoticedPdf').textContent = document.getElementById('trendsNoticed').value;
       document.getElementById('resourceChallengesPdf').textContent = document.getElementById('resourceChallenges').value;
       document.getElementById('suggestedImprovementsPdf').textContent = document.getElementById('suggestedImprovements').value;
       
-      // Add a special class to the body for PDF-specific styling
       document.body.classList.add('pdf-render-mode');
 
       const pdfContainer = document.getElementById('pdfContainer');
@@ -660,10 +668,8 @@
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
-      // Generate and save the PDF
       await html2pdf().set(opt).from(pdfContainer).save();
       
-      // Clean up by removing the special class
       document.body.classList.remove('pdf-render-mode');
     }
     
@@ -694,7 +700,7 @@
       const modal = document.getElementById(modalId);
       modal.classList.remove('show');
       if (modalId === 'confirmModal') {
-        confirmCallback = null; // Clear callback when confirmation is cancelled
+        confirmCallback = null;
       }
     }
     
@@ -752,7 +758,8 @@
         const historyBody = document.getElementById('hourHistoryBody');
         historyBody.innerHTML = '';
         if (item.hoursHistory && item.hoursHistory.length > 0) {
-            item.hoursHistory.forEach(h => addHourHistoryRow(h.year, h.bid, h.actual));
+            // Sort by year descending to ensure we add them in the correct visual order
+            [...item.hoursHistory].sort((a,b) => b.year - a.year).forEach(h => addHourHistoryRow(h.year, h.bid, h.actual));
         } else {
             addHourHistoryRow();
         }
@@ -760,10 +767,28 @@
 
     function addHourHistoryRow(year = '', bid = '', actual = '') {
         const tbody = document.getElementById('hourHistoryBody');
-        const row = tbody.insertRow();
-        const currentYear = new Date().getFullYear();
+        let nextYear = year;
+
+        // If year isn't provided (i.e., we are adding a new row, not populating from saved data)
+        if (year === '') {
+            const rows = tbody.querySelectorAll('tr');
+            if (rows.length > 0) {
+                // Get the year from the first row (which is the most recent year visually)
+                const lastYearInput = rows[0].querySelector('.history-year');
+                const lastYear = parseInt(lastYearInput.value, 10);
+                if (!isNaN(lastYear)) {
+                    nextYear = lastYear - 1; // Decrement for the new row
+                } else {
+                    nextYear = new Date().getFullYear(); // Fallback if the input is bad
+                }
+            } else {
+                nextYear = new Date().getFullYear(); // First entry for this project
+            }
+        }
+        
+        const row = tbody.insertRow(0); // Insert at the top
         row.innerHTML = `
-            <td><input type="number" class="history-year" placeholder="YYYY" value="${year || currentYear}" required></td>
+            <td><input type="number" class="history-year" placeholder="YYYY" value="${nextYear}" required></td>
             <td><input type="number" step="0.1" class="history-bid" placeholder="e.g. 40" value="${bid}" required></td>
             <td><input type="number" step="0.1" class="history-actual" placeholder="e.g. 42.5" value="${actual}" required></td>
             <td class="no-pdf"><button type="button" class="btn-danger" style="padding:4px 8px;" onclick="this.closest('tr').remove()">X</button></td>
@@ -859,7 +884,6 @@
        Initialization & Event Listeners
        ====================== */
     function initialize() {
-      // Load data from localStorage
       const drJSON = localStorage.getItem(LS_DATE_RANGE_KEY);
       if (drJSON) {
         const dr = JSON.parse(drJSON);
@@ -875,12 +899,10 @@
         document.getElementById('suggestedImprovements').value = n.suggestedImprovements || '';
       }
 
-      // Add event listeners
       document.getElementById('trendsNoticed').addEventListener('input', saveNotes);
       document.getElementById('resourceChallenges').addEventListener('input', saveNotes);
       document.getElementById('suggestedImprovements').addEventListener('input', saveNotes);
       
-      // Confirmation modal listeners
       document.getElementById('confirmCancelBtn').addEventListener('click', () => closeModal('confirmModal'));
       document.getElementById('confirmOkBtn').addEventListener('click', () => {
         if (typeof confirmCallback === 'function') {
@@ -889,7 +911,6 @@
         closeModal('confirmModal');
       });
       
-      // Close modals with Escape key
       document.addEventListener('keydown', function(e) {
         if (e.key === "Escape") {
           document.querySelectorAll('.modal.show').forEach(modal => closeModal(modal.id));
