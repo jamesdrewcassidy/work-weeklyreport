@@ -141,7 +141,7 @@
       border-radius: 8px;
       margin-bottom: 25px;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); /* Adjusted for new stat */
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 15px;
     }
     #reportSummary p {
@@ -174,7 +174,6 @@
     .notes-row td {
       background-color: #fafafa;
       padding: 14px;
-      /* UPDATED: Darker text for notes */
       color: var(--text-color);
       border-top: 2px solid var(--border-color-light);
       font-size: 1rem;
@@ -199,11 +198,6 @@
     .history-table { margin: 0; font-size: 1rem; }
     .history-table th { background-color: #e9ecef; padding: 10px; font-weight: 600; }
     .history-table td { padding: 8px 10px; }
-    .history-table tfoot td {
-        background-color: #eef2f5;
-        font-weight: bold;
-        border-top: 2px solid var(--border-color);
-    }
     .history-table-modal { font-size: 0.9rem; }
     
     .over-budget { color: var(--danger-color); font-weight: bold; }
@@ -491,10 +485,10 @@
     /* ======================
        Global Variables & Local Storage Keys
        ====================== */
-    const LS_COMPLETED_KEY  = 'weekly_report_completed_v7'; // Note: Version bump
-    const LS_ONGOING_KEY    = 'weekly_report_ongoing_v7';
-    const LS_NOTES_KEY      = 'weekly_report_notes_v7';
-    const LS_DATE_RANGE_KEY = 'weekly_report_dateRange_v7';
+    const LS_COMPLETED_KEY  = 'weekly_report_completed_v8'; // Note: Version bump
+    const LS_ONGOING_KEY    = 'weekly_report_ongoing_v8';
+    const LS_NOTES_KEY      = 'weekly_report_notes_v8';
+    const LS_DATE_RANGE_KEY = 'weekly_report_dateRange_v8';
     let confirmCallback = null;
 
     /* ======================
@@ -524,14 +518,14 @@
     function calculateOverUnder(bid, actual) {
       const b = parseFloat(bid);
       const a = parseFloat(actual);
-      if (isNaN(b) || isNaN(a) || b === 0) return { text: 'N/A', className: '', value: null };
+      if (isNaN(b) || isNaN(a) || b === 0) return { text: 'N/A', className: '' };
       
       const diff = ((a - b) / b) * 100;
       const txt = diff.toFixed(1) + '%';
       
-      if (diff > 0) return { text: `+${txt}`, className: 'over-budget', value: diff };
-      if (diff < 0) return { text: txt, className: 'under-budget', value: diff };
-      return { text: '0.0%', className: '', value: 0 };
+      if (diff > 0) return { text: `+${txt}`, className: 'over-budget' };
+      if (diff < 0) return { text: txt, className: 'under-budget' };
+      return { text: '0.0%', className: '' };
     }
     function escapeHTML(str) {
         if (!str) return '';
@@ -604,30 +598,12 @@
         if (!history || history.length === 0) return `<p style="text-align:center; color:${'var(--text-color-light)'};">No hour history recorded.</p>`;
         
         let table = '<table class="history-table"><thead><tr><th>Year</th><th>Bid</th><th>Actual</th><th>+/- %</th></tr></thead><tbody>';
-        let totalBid = 0, totalActual = 0;
         
         [...history].sort((a,b) => b.year - a.year).forEach(h => {
             const ou = calculateOverUnder(h.bid, h.actual);
-            totalBid += parseFloat(h.bid) || 0;
-            totalActual += parseFloat(h.actual) || 0;
             table += `<tr><td>${h.year}</td><td>${h.bid}</td><td>${h.actual}</td><td class="${ou.className}">${ou.text}</td></tr>`;
         });
-        table += '</tbody>';
-
-        // NEW: Add a footer with the project's average over/under
-        if (history.length > 1) {
-            const avgOU = calculateOverUnder(totalBid, totalActual);
-            table += `
-                <tfoot>
-                    <tr>
-                        <td colspan="3" style="text-align: right;">Project Average:</td>
-                        <td class="${avgOU.className}">${avgOU.text}</td>
-                    </tr>
-                </tfoot>
-            `;
-        }
-        
-        table += '</table>';
+        table += '</tbody></table>';
         return table;
     }
 
@@ -679,8 +655,6 @@
       document.getElementById('totalCompletedCount').textContent = completedData.length;
 
       let totalBid = 0, totalActual = 0;
-      let totalOverUnderSum = 0;
-      let projectsWithHours = 0;
 
       completedData.forEach(item => {
         if(item.hoursHistory && item.hoursHistory.length > 0){
@@ -689,12 +663,6 @@
             });
             totalBid += parseFloat(latest.bid) || 0;
             totalActual += parseFloat(latest.actual) || 0;
-
-            const ou = calculateOverUnder(latest.bid, latest.actual);
-            if(ou.value !== null) {
-                totalOverUnderSum += ou.value;
-                projectsWithHours++;
-            }
         }
       });
 
@@ -705,8 +673,6 @@
       const totalOUDisplay = document.getElementById('totalOverUnder');
       totalOUDisplay.textContent = totalOverUnder.text;
       totalOUDisplay.className = totalOverUnder.className;
-
-      }
     }
 
     function updateDateRange(e) {
