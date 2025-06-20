@@ -141,7 +141,7 @@
       border-radius: 8px;
       margin-bottom: 25px;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); /* Adjusted for new stat */
       gap: 15px;
     }
     #reportSummary p {
@@ -174,10 +174,15 @@
     .notes-row td {
       background-color: #fafafa;
       padding: 14px;
-      font-style: italic;
-      color: #555;
+      /* UPDATED: Darker text for notes */
+      color: var(--text-color);
       border-top: 2px solid var(--border-color-light);
       font-size: 1rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .notes-row td strong {
+        color: var(--secondary-color);
     }
     .empty-row td {
         padding: 25px;
@@ -194,6 +199,11 @@
     .history-table { margin: 0; font-size: 1rem; }
     .history-table th { background-color: #e9ecef; padding: 10px; font-weight: 600; }
     .history-table td { padding: 8px 10px; }
+    .history-table tfoot td {
+        background-color: #eef2f5;
+        font-weight: bold;
+        border-top: 2px solid var(--border-color);
+    }
     .history-table-modal { font-size: 0.9rem; }
     
     .over-budget { color: var(--danger-color); font-weight: bold; }
@@ -225,6 +235,10 @@
     input[type="text"], input[type="date"], input[type="number"], textarea, select {
       width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem;
       font-family: 'Inter', sans-serif;
+    }
+    textarea {
+        resize: vertical;
+        min-height: 100px;
     }
     .submit-btn { margin-top: 15px; width: 100%; font-size: 1.1rem; padding: 12px; }
     
@@ -259,7 +273,7 @@
       border: 1px solid var(--border-color-light);
     }
     body.pdf-render-mode .completed-info-cell p { font-size: 9.5pt; margin-bottom: 5px; }
-    body.pdf-render-mode .notes-row td { padding: 7px; font-size: 9pt; }
+    body.pdf-render-mode .notes-row td { padding: 7px; font-size: 9pt; white-space: pre-wrap !important; color: #000; }
     body.pdf-render-mode .empty-row td { padding: 15px; font-size: 9pt; }
     body.pdf-render-mode .history-table { font-size: 9pt; }
     body.pdf-render-mode .history-table th, body.pdf-render-mode .history-table td { padding: 5px; }
@@ -390,6 +404,13 @@
           <label for="completedDeficienciesFound">Deficiencies Found (#)</label>
           <input type="number" id="completedDeficienciesFound" placeholder="e.g. 2" required min="0" />
         </div>
+        <div class="form-group">
+            <label for="completedReportSent">Report Sent</label>
+            <select id="completedReportSent" required>
+                <option value="No" selected>No</option>
+                <option value="Yes">Yes</option>
+            </select>
+        </div>
         
         <h4>Hour History</h4>
         <table class="history-table history-table-modal">
@@ -401,9 +422,14 @@
         <button type="button" class="btn-secondary no-pdf" onclick="addHourHistoryRow()">+ Add Year</button>
 
         <div class="form-group" style="margin-top: 1rem;">
-          <label for="completedNotes">Notes</label>
-          <textarea id="completedNotes" placeholder="Enter detailed notes here..."></textarea>
+          <label for="completedDiscrepancies">Discrepancies</label>
+          <textarea id="completedDiscrepancies" placeholder="Paste discrepancy details here..."></textarea>
         </div>
+        <div class="form-group">
+          <label for="completedNotes">Notes</label>
+          <textarea id="completedNotes" placeholder="Enter any additional notes here..."></textarea>
+        </div>
+
         <button type="submit" class="submit-btn btn-success">Save Inspection</button>
       </form>
     </div>
@@ -465,10 +491,10 @@
     /* ======================
        Global Variables & Local Storage Keys
        ====================== */
-    const LS_COMPLETED_KEY  = 'weekly_report_completed_v5';
-    const LS_ONGOING_KEY    = 'weekly_report_ongoing_v5';
-    const LS_NOTES_KEY      = 'weekly_report_notes_v5';
-    const LS_DATE_RANGE_KEY = 'weekly_report_dateRange_v5';
+    const LS_COMPLETED_KEY  = 'weekly_report_completed_v7'; // Note: Version bump
+    const LS_ONGOING_KEY    = 'weekly_report_ongoing_v7';
+    const LS_NOTES_KEY      = 'weekly_report_notes_v7';
+    const LS_DATE_RANGE_KEY = 'weekly_report_dateRange_v7';
     let confirmCallback = null;
 
     /* ======================
@@ -498,14 +524,18 @@
     function calculateOverUnder(bid, actual) {
       const b = parseFloat(bid);
       const a = parseFloat(actual);
-      if (isNaN(b) || isNaN(a) || b === 0) return { text: 'N/A', className: '' };
+      if (isNaN(b) || isNaN(a) || b === 0) return { text: 'N/A', className: '', value: null };
       
       const diff = ((a - b) / b) * 100;
       const txt = diff.toFixed(1) + '%';
       
-      if (diff > 0) return { text: `+${txt}`, className: 'over-budget' };
-      if (diff < 0) return { text: txt, className: 'under-budget' };
-      return { text: '0.0%', className: '' };
+      if (diff > 0) return { text: `+${txt}`, className: 'over-budget', value: diff };
+      if (diff < 0) return { text: txt, className: 'under-budget', value: diff };
+      return { text: '0.0%', className: '', value: 0 };
+    }
+    function escapeHTML(str) {
+        if (!str) return '';
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
     /* ======================
@@ -534,10 +564,11 @@
             
             const deficienciesClass = parseInt(item.deficiencies) > 0 ? 'has-deficiencies' : '';
             infoCell.innerHTML = `
-                <p><strong>Project #:</strong> ${item.projectNumber}</p>
-                <p><strong>Site Name:</strong> ${item.siteName}</p>
+                <p><strong>Project #:</strong> ${escapeHTML(item.projectNumber)}</p>
+                <p><strong>Site Name:</strong> ${escapeHTML(item.siteName)}</p>
                 <p><strong>Date Completed:</strong> ${formatDate(parseLocalDate(item.dateCompleted))}</p>
-                <p><strong>Deficiencies:</strong> <span class="${deficienciesClass}">${item.deficiencies}</span></p>
+                <p><strong>Deficiencies:</strong> <span class="${deficienciesClass}">${escapeHTML(item.deficiencies)}</span></p>
+                <p><strong>Report Sent:</strong> ${escapeHTML(item.reportSent || 'No')}</p>
             `;
 
             let historyCell = mainRow.insertCell();
@@ -551,24 +582,52 @@
                 <button class="btn-danger" onclick="deleteItem(LS_COMPLETED_KEY, '${item.id}')" style="width: 100%;">Delete</button>
             `;
 
+            if (item.discrepancies) {
+                let discrepanciesRow = tbody.insertRow();
+                discrepanciesRow.classList.add("notes-row");
+                let cell = discrepanciesRow.insertCell();
+                cell.colSpan = 3;
+                cell.innerHTML = `<strong>Discrepancies:</strong><br>${escapeHTML(item.discrepancies)}`;
+            }
+
             if (item.notes) {
                 let notesRow = tbody.insertRow();
                 notesRow.classList.add("notes-row");
-                let notesCell = notesRow.insertCell();
-                notesCell.colSpan = 3;
-                notesCell.textContent = item.notes;
+                let cell = notesRow.insertCell();
+                cell.colSpan = 3;
+                cell.innerHTML = `<strong>Notes:</strong><br>${escapeHTML(item.notes)}`;
             }
         });
     }
     
     function generateHistoryTableHTML(history) {
         if (!history || history.length === 0) return `<p style="text-align:center; color:${'var(--text-color-light)'};">No hour history recorded.</p>`;
+        
         let table = '<table class="history-table"><thead><tr><th>Year</th><th>Bid</th><th>Actual</th><th>+/- %</th></tr></thead><tbody>';
+        let totalBid = 0, totalActual = 0;
+        
         [...history].sort((a,b) => b.year - a.year).forEach(h => {
             const ou = calculateOverUnder(h.bid, h.actual);
+            totalBid += parseFloat(h.bid) || 0;
+            totalActual += parseFloat(h.actual) || 0;
             table += `<tr><td>${h.year}</td><td>${h.bid}</td><td>${h.actual}</td><td class="${ou.className}">${ou.text}</td></tr>`;
         });
-        table += '</tbody></table>';
+        table += '</tbody>';
+
+        // NEW: Add a footer with the project's average over/under
+        if (history.length > 1) {
+            const avgOU = calculateOverUnder(totalBid, totalActual);
+            table += `
+                <tfoot>
+                    <tr>
+                        <td colspan="3" style="text-align: right;">Project Average:</td>
+                        <td class="${avgOU.className}">${avgOU.text}</td>
+                    </tr>
+                </tfoot>
+            `;
+        }
+        
+        table += '</table>';
         return table;
     }
 
@@ -607,7 +666,7 @@
                 notesRow.classList.add("notes-row");
                 let notesCell = notesRow.insertCell();
                 notesCell.colSpan = mainRow.cells.length;
-                notesCell.textContent = item.notes;
+                notesCell.innerHTML = `<strong>Notes:</strong><br>${escapeHTML(item.notes)}`;
             }
         });
     }
@@ -620,6 +679,9 @@
       document.getElementById('totalCompletedCount').textContent = completedData.length;
 
       let totalBid = 0, totalActual = 0;
+      let totalOverUnderSum = 0;
+      let projectsWithHours = 0;
+
       completedData.forEach(item => {
         if(item.hoursHistory && item.hoursHistory.length > 0){
             const latest = item.hoursHistory.reduce((latestEntry, currentEntry) => {
@@ -627,8 +689,15 @@
             });
             totalBid += parseFloat(latest.bid) || 0;
             totalActual += parseFloat(latest.actual) || 0;
+
+            const ou = calculateOverUnder(latest.bid, latest.actual);
+            if(ou.value !== null) {
+                totalOverUnderSum += ou.value;
+                projectsWithHours++;
+            }
         }
       });
+
       document.getElementById('totalBidHours').textContent = totalBid.toFixed(1);
       document.getElementById('totalHoursWorked').textContent = totalActual.toFixed(1);
       
@@ -636,6 +705,8 @@
       const totalOUDisplay = document.getElementById('totalOverUnder');
       totalOUDisplay.textContent = totalOverUnder.text;
       totalOUDisplay.className = totalOverUnder.className;
+
+      }
     }
 
     function updateDateRange(e) {
@@ -734,6 +805,8 @@
             siteName: document.getElementById('completedSiteName').value.trim(),
             dateCompleted: document.getElementById('completedDate').value,
             deficiencies: document.getElementById('completedDeficienciesFound').value.trim(),
+            reportSent: document.getElementById('completedReportSent').value,
+            discrepancies: document.getElementById('completedDiscrepancies').value.trim(),
             notes: document.getElementById('completedNotes').value.trim(),
             hoursHistory: hoursHistory,
         };
@@ -748,17 +821,19 @@
 
         openModal('completedModal', 'completedProjectNumber');
         document.getElementById('completedModalTitle').textContent = 'Edit Completed Inspection';
+        
         document.getElementById('editCompletedId').value = item.id;
         document.getElementById('completedProjectNumber').value = item.projectNumber;
         document.getElementById('completedSiteName').value = item.siteName;
         document.getElementById('completedDate').value = formatDateStringForInput(item.dateCompleted);
         document.getElementById('completedDeficienciesFound').value = item.deficiencies;
-        document.getElementById('completedNotes').value = item.notes;
+        document.getElementById('completedReportSent').value = item.reportSent || 'No';
+        document.getElementById('completedDiscrepancies').value = item.discrepancies || '';
+        document.getElementById('completedNotes').value = item.notes || '';
 
         const historyBody = document.getElementById('hourHistoryBody');
         historyBody.innerHTML = '';
         if (item.hoursHistory && item.hoursHistory.length > 0) {
-            // Sort by year descending to ensure we add them in the correct visual order
             [...item.hoursHistory].sort((a,b) => b.year - a.year).forEach(h => addHourHistoryRow(h.year, h.bid, h.actual));
         } else {
             addHourHistoryRow();
@@ -769,24 +844,22 @@
         const tbody = document.getElementById('hourHistoryBody');
         let nextYear = year;
 
-        // If year isn't provided (i.e., we are adding a new row, not populating from saved data)
         if (year === '') {
             const rows = tbody.querySelectorAll('tr');
             if (rows.length > 0) {
-                // Get the year from the first row (which is the most recent year visually)
                 const lastYearInput = rows[0].querySelector('.history-year');
                 const lastYear = parseInt(lastYearInput.value, 10);
                 if (!isNaN(lastYear)) {
-                    nextYear = lastYear - 1; // Decrement for the new row
+                    nextYear = lastYear - 1; 
                 } else {
-                    nextYear = new Date().getFullYear(); // Fallback if the input is bad
+                    nextYear = new Date().getFullYear(); 
                 }
             } else {
-                nextYear = new Date().getFullYear(); // First entry for this project
+                nextYear = new Date().getFullYear(); 
             }
         }
         
-        const row = tbody.insertRow(0); // Insert at the top
+        const row = tbody.insertRow(0);
         row.innerHTML = `
             <td><input type="number" class="history-year" placeholder="YYYY" value="${nextYear}" required></td>
             <td><input type="number" step="0.1" class="history-bid" placeholder="e.g. 40" value="${bid}" required></td>
@@ -864,7 +937,8 @@
             localStorage.removeItem(LS_NOTES_KEY);
             localStorage.removeItem(LS_DATE_RANGE_KEY);
             ['trendsNoticed', 'resourceChallenges', 'suggestedImprovements', 'startDate', 'endDate'].forEach(id => {
-                document.getElementById(id).value = '';
+                const el = document.getElementById(id);
+                if (el) el.value = '';
             });
             updateDateRange();
             renderAllTables();
@@ -886,17 +960,21 @@
     function initialize() {
       const drJSON = localStorage.getItem(LS_DATE_RANGE_KEY);
       if (drJSON) {
-        const dr = JSON.parse(drJSON);
-        document.getElementById('startDate').value = dr.startDate || '';
-        document.getElementById('endDate').value = dr.endDate || '';
-        updateDateRange();
+        try {
+            const dr = JSON.parse(drJSON);
+            document.getElementById('startDate').value = dr.startDate || '';
+            document.getElementById('endDate').value = dr.endDate || '';
+            updateDateRange();
+        } catch(e){ console.error("Could not parse date range from localStorage", e); }
       }
       const notesJSON = localStorage.getItem(LS_NOTES_KEY);
       if (notesJSON) {
-        const n = JSON.parse(notesJSON);
-        document.getElementById('trendsNoticed').value = n.trendsNoticed || '';
-        document.getElementById('resourceChallenges').value = n.resourceChallenges || '';
-        document.getElementById('suggestedImprovements').value = n.suggestedImprovements || '';
+        try {
+            const n = JSON.parse(notesJSON);
+            document.getElementById('trendsNoticed').value = n.trendsNoticed || '';
+            document.getElementById('resourceChallenges').value = n.resourceChallenges || '';
+            document.getElementById('suggestedImprovements').value = n.suggestedImprovements || '';
+        } catch(e){ console.error("Could not parse notes from localStorage", e); }
       }
 
       document.getElementById('trendsNoticed').addEventListener('input', saveNotes);
