@@ -688,12 +688,15 @@
 
       completedData.forEach(item => {
         if(item.hoursHistory && item.hoursHistory.length > 0){
-            // Use all history entries for totals
-            item.hoursHistory.forEach(h => {
-                totalBidHours += parseFloat(h.bid) || 0;
-                totalActualHours += parseFloat(h.actual) || 0;
-                totalBidPrice += parseFloat(h.bidPrice) || 0;
+            // FIX #1: Only use the most recent year's data for the summary totals.
+            // Find the entry with the highest (most recent) year.
+            const latestEntry = item.hoursHistory.reduce((latest, current) => {
+                return parseInt(current.year) > parseInt(latest.year) ? current : latest;
             });
+            
+            totalBidHours += parseFloat(latestEntry.bid) || 0;
+            totalActualHours += parseFloat(latestEntry.actual) || 0;
+            totalBidPrice += parseFloat(latestEntry.bidPrice) || 0;
         }
       });
       
@@ -847,17 +850,22 @@
         const tbody = document.getElementById('hourHistoryBody');
         let nextYear = year;
 
+        // FIX #2: Correctly calculate the next year when adding a new row.
         if (year === '') {
             const rows = tbody.querySelectorAll('tr');
             if (rows.length > 0) {
+                // Get the year from the top-most row (most recent year)
                 const lastYearInput = rows[0].querySelector('.history-year');
                 const lastYear = parseInt(lastYearInput.value, 10);
                 if (!isNaN(lastYear)) {
-                    nextYear = new Date().getFullYear(); // Default to current year for new entries
+                    // Decrement from the last year
+                    nextYear = lastYear - 1;
                 } else {
+                    // Fallback if the input is empty or invalid
                     nextYear = new Date().getFullYear(); 
                 }
             } else {
+                // If no rows exist, default to the current year
                 nextYear = new Date().getFullYear(); 
             }
         }
