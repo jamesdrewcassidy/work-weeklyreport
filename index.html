@@ -12,6 +12,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- JSZip for ZIP functionality -->
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <style>
     /* ========== GLOBAL RESET & BODY ========== */
     :root {
@@ -289,6 +291,7 @@
   <!-- ========== TOP-LEVEL UI ELEMENTS (NOT IN PDF) ========== -->
   <div class="top-actions no-pdf">
     <button class="btn-primary" onclick="downloadPDF()">Download as PDF</button>
+    <button class="btn-secondary" onclick="downloadAllSummariesZip()">Download All Summaries (.zip)</button>
     <button class="btn-danger" onclick="clearAllData()">Clear All Data</button>
   </div>
 
@@ -749,6 +752,124 @@
       document.body.classList.remove('pdf-render-mode');
     }
     
+    /* ========= ALL COMPLETED → ZIP OF HTML SUMMARIES ========= */
+    async function downloadAllSummariesZip() {
+      const data = JSON.parse(localStorage.getItem(LS_COMPLETED_KEY) || '[]');
+      if (!data.length) return;
+
+      const zip = new JSZip();
+      const root = zip.folder("Completed_Inspection_Summaries");
+
+      // Build one neat HTML page per completed item.
+      data.forEach(item => {
+        const html = buildCompletedSummaryHTML(item);  // defined below
+        const siteSafe = (item.siteName || 'Site').replace(/[^a-z0-9_\-]+/gi, '_');
+        const projSafe = (item.projectNumber || 'Project').replace(/[^a-z0-9_\-]+/gi, '_');
+
+        // optional folder per site for easier filing
+        const siteFolder = root.folder(siteSafe);
+        siteFolder.file(`${siteSafe}_${projSafe}_Summary.html`, html);
+      });
+
+      const blob = await zip.generateAsync({ type: "blob" });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `Completed_Summaries_${new Date().toISOString().slice(0,10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(a.href);
+      a.remove();
+    }
+    
+    /* ========= Single inspection Summary (clean one-page HTML) =========
+       Includes: Project #, Site Name, Date Completed, Financial & Hour History, Notes
+       Omits: Discrepancies, Deficiencies, Report Sent (per request)
+    */
+    function buildCompletedSummaryHTML(item) {
+      const dateCompleted = item.dateCompleted ? formatDate(parseLocalDate(item.dateCompleted)) : '';
+      const rows = (Array.isArray(item.hoursHistory) ? [...item.hoursHistory] : [])
+        .sort((a,b) => parseInt(b.year) - parseInt(a.year))
+        .map(h => {
+          const ou = calculateOverUnder(h.bid, h.actual); // your existing helper returns {text, className}
+          const bidPrice = parseFloat(h.bidPrice) || 0;
+          const actualPrice = (parseFloat(h.actual) || 0) * HOURLY_RATE; // your constant
+          const gainLoss = bidPrice - actualPrice;
+          return `
+            <tr>
+              <td>${escapeHTML(h.year || '')}</td>
+              <td>${escapeHTML(h.bid || '')}</td>
+              <td>${escapeHTML(h.actual || '')}</td>
+              <td class="${ou.className}">${ou.text}</td>
+              <td>${formatCurrency(bidPrice)}</td>
+              <td>${formatCurrency(actualPrice)}</td>
+              <td class="${gainLoss >= 0 ? 'text-gain' : 'text-loss'}">${formatCurrency(gainLoss)}</td>
+            </tr>`;
+        }).join('');
+
+      // Clean, printer-friendly styles—self-contained so it looks consistent anywhere
+      const css = `
+        :root { --primary:#c8102e; --ink:#222; --ink-light:#666; --gain:#138a36; --loss:#c8102e; }
+        *{box-sizing:border-box}
+        body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:24px;color:var(--ink);background:#fff}
+        h1{font-size:22px;margin:0 0 12px 0}
+        h2{font-size:16px;margin:20px 0 8px 0;color:var(--ink)}
+        .card{border:1px solid #eee;border-radius:10px;padding:16px;margin-bottom:14px}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+        .label{color:var(--ink-light)}
+        table{width:100%;border-collapse:collapse;font-size:14px}
+        th,td{border:1px solid #e6e6e6;padding:8px;text-align:left;vertical-align:top}
+        th{background:#f6f6f6}
+        .text-gain{color:var(--gain);font-weight:600}
+        .text-loss{color:var(--loss);font-weight:600}
+        .muted{color:var(--ink-light);font-size:12px;margin-top:6px}
+        .notes{white-space:pre-wrap;line-height:1.35}
+      `;
+
+      return `<!doctype html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>${escapeHTML(item.siteName || '')} – ${escapeHTML(item.projectNumber || '')} Summary</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <style>${css}</style>
+    </head>
+    <body>
+      <h1>Inspection Summary</h1>
+
+      <div class="card">
+        <div class="grid">
+          <div><div class="label">Project #</div><div>${escapeHTML(item.projectNumber || '')}</div></div>
+          <div><div class="label">Site Name</div><div>${escapeHTML(item.siteName || '')}</div></div>
+          <div><div class="label">Date Completed</div><div>${escapeHTML(dateCompleted)}</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Financial & Hour History</h2>
+        <div class="muted">(Actual price calculated at $${HOURLY_RATE}/hr)</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Year</th><th>Bid Hrs</th><th>Actual Hrs</th><th>+/- %</th>
+              <th>Bid Price</th><th>Actual Price</th><th>Gain/Loss</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows || `<tr><td colspan="7" class="muted">No hour history recorded.</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+
+      ${item.notes ? `
+      <div class="card">
+        <h2>Notes</h2>
+        <div class="notes">${escapeHTML(item.notes)}</div>
+      </div>` : ''}
+
+    </body>
+    </html>`;
+    }
+
     /* ======================
        Generic Modal & Data Helpers
        ====================== */
