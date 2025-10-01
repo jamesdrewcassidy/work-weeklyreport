@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Omni Technologies Weekly I&T Progress Report</title>
+  <title>Omni Technologies Weekly I&T Progress Report.1</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,6 +14,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <!-- JSZip for ZIP functionality -->
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     /* ========== GLOBAL RESET & BODY ========== */
     :root {
@@ -291,7 +292,7 @@
   <!-- ========== TOP-LEVEL UI ELEMENTS (NOT IN PDF) ========== -->
   <div class="top-actions no-pdf">
     <button class="btn-primary" onclick="downloadPDF()">Download as PDF</button>
-    <button class="btn-secondary" onclick="downloadAllSummariesZip()">Download All Summaries (.zip)</button>
+    <button class="btn-secondary" onclick="downloadAllExcelFiles()">Download All Excel Summaries</button>
     <button class="btn-danger" onclick="clearAllData()">Clear All Data</button>
   </div>
 
@@ -619,7 +620,7 @@
         
         let table = '<table class="history-table"><thead><tr><th>Year</th><th>Bid Hrs</th><th>Actual Hrs</th><th>+/- %</th><th>Bid Price</th><th>Actual Price</th><th>Gain/Loss</th></tr></thead><tbody>';
         
-        [...history].sort((a,b) => b.year - a.year).forEach(h => {
+        [...history].sort((a,b) => (parseInt(a.year)||0) - (parseInt(b.year)||0)).forEach(h => {
             const ou = calculateOverUnder(h.bid, h.actual);
             const bidPrice = parseFloat(h.bidPrice) || 0;
             const actualPrice = (parseFloat(h.actual) || 0) * HOURLY_RATE;
@@ -752,33 +753,119 @@
       document.body.classList.remove('pdf-render-mode');
     }
     
-    /* ========= ALL COMPLETED → ZIP OF HTML SUMMARIES ========= */
-    async function downloadAllSummariesZip() {
-      const data = JSON.parse(localStorage.getItem(LS_COMPLETED_KEY) || '[]');
-      if (!data.length) return;
+    /* ========= EACH COMPLETED → OWN EXCEL FILE ========= */
+    function downloadAllExcelFiles() {
+      const completed = JSON.parse(localStorage.getItem(LS_COMPLETED_KEY) || '[]');
+      if (!completed.length) return;
 
-      const zip = new JSZip();
-      const root = zip.folder("Completed_Inspection_Summaries");
+      completed.forEach(item => {
+        const wb = XLSX.utils.book_new();
+        const ws = buildInspectionSheet(item);
+        XLSX.utils.book_append_sheet(wb, ws, "Summary");
 
-      // Build one neat HTML page per completed item.
-      data.forEach(item => {
-        const html = buildCompletedSummaryHTML(item);  // defined below
-        const siteSafe = (item.siteName || 'Site').replace(/[^a-z0-9_\-]+/gi, '_');
-        const projSafe = (item.projectNumber || 'Project').replace(/[^a-z0-9_\-]+/gi, '_');
+        // Sanitize filename (sitename_Hours_Summary.xlsx)
+        let safeSite = (item.siteName || "Site").replace(/[^A-Za-z0-9 _-]/g, "");
+        if (!safeSite.trim()) safeSite = "Site";
+        const filename = `${safeSite}_Hours_Summary.xlsx`;
 
-        // optional folder per site for easier filing
-        const siteFolder = root.folder(siteSafe);
-        siteFolder.file(`${siteSafe}_${projSafe}_Summary.html`, html);
+        XLSX.writeFile(wb, filename);
+      });
+    }
+    
+    function buildInspectionSheet(item) {
+      const rate = HOURLY_RATE || 25;
+
+      // Helper to coerce values to real numbers, returning null for invalid ones
+      const toNum = (v) => {
+        const n = parseFloat(v);
+        return Number.isFinite(n) ? n : null;
+      };
+
+      const aoa = [
+        ["Inspection Summary"],
+        ["Project #", item.projectNumber || "", "", "Rate/hr", rate],
+        ["Site Name", item.siteName || ""],
+        ["Date Completed", formatDate(parseLocalDate(item.dateCompleted)) || "", ""],
+        ["Notes", item.notes || ""],
+        [],
+        [],
+        ["Year","Bid Hrs","Actual Hrs","+/- %","Bid Price","Actual Price","Gain/Loss"]
+      ];
+
+      // Sort years oldest → newest
+      const hist = Array.isArray(item.hoursHistory) ? [...item.hoursHistory] : [];
+      hist.sort((a,b) => (parseInt(a.year)||0) - (parseInt(b.year)||0));
+
+      hist.forEach(h => {
+        const r = aoa.length + 1; // Get current row number for formula
+        const B = `B${r}`, C = `C${r}`, E = `E${r}`, F = `F${r}`;
+        aoa.push([
+          h.year || "",
+          toNum(h.bid),
+          toNum(h.actual),
+          { f: `IF(OR(${B}="",${C}="",${B}=0),"",(${C}-${B})/${B})` },
+          toNum(h.bidPrice),
+          { f: `IF(${C}="", "", ${C}*$E$2)` },
+          { f: `IF(OR(${E}="", ${F}=""), "", ${E}-${F})` }
+        ]);
       });
 
-      const blob = await zip.generateAsync({ type: "blob" });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `Completed_Summaries_${new Date().toISOString().slice(0,10)}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      URL.revokeObjectURL(a.href);
-      a.remove();
+      // Add 20 blank rows for future entries
+      for (let i = 1; i <= 20; i++) {
+        const r = aoa.length + 1; // Get current row number for formula
+        const B = `B${r}`, C = `C${r}`, E = `E${r}`, F = `F${r}`;
+        aoa.push([
+          "",
+          null,
+          null,
+          { f: `IF(OR(${B}="",${C}="",${B}=0),"",(${C}-${B})/${B})` },
+          null,
+          { f: `IF(${C}="", "", ${C}*$E$2)` },
+          { f: `IF(OR(${E}="", ${F}=""), "", ${E}-${F})` }
+        ]);
+      }
+
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+      // ---- Formatting ----
+      const range = XLSX.utils.decode_range(ws['!ref']);
+      for (let R = 7; R <= range.e.r; R++) {
+        const D = XLSX.utils.encode_cell({ r: R, c: 3 });
+        const E = XLSX.utils.encode_cell({ r: R, c: 4 });
+        const F = XLSX.utils.encode_cell({ r: R, c: 5 });
+        const G = XLSX.utils.encode_cell({ r: R, c: 6 });
+        if (ws[D]) ws[D].z = "0.0%";
+        if (ws[E]) ws[E].z = "$#,##0.00";
+        if (ws[F]) ws[F].z = "$#,##0.00";
+        if (ws[G]) ws[G].z = "$#,##0.00";
+      }
+
+      ws["A1"].s = { font: { bold: true, sz: 14 } };
+      ["A2","A3","A4","A5","D2"].forEach(c => { if(ws[c]) ws[c].s = { font: { bold: true } }; });
+      ["A8","B8","C8","D8","E8","F8","G8"].forEach(c => { 
+          const cell = XLSX.utils.encode_cell({r:7, c: ["A","B","C","D","E","F","G"].indexOf(c.charAt(0))});
+          if(ws[cell]) ws[cell].s = { font: { bold: true } }; 
+      });
+
+      ws['!merges'] = ws['!merges'] || [];
+      ws['!merges'].push({ s: { r:4, c:1 }, e: { r:4, c:6 } });
+      if (!ws['B5']) ws['B5'] = { t: 's', v: item.notes || "" };
+      ws['B5'].s = { alignment: { wrapText: true, vertical: "top" } };
+      
+      ws['!rows'] = ws['!rows'] || [];
+      ws['!rows'][4] = { hpt: 60 };
+
+      ws["!cols"] = [
+        { wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 10 },
+        { wch: 14 }, { wch: 14 }, { wch: 14 }
+      ];
+
+      ["!rows"][0] = { hpt: 22 };
+      ["!rows"][1] = { hpt: 18 };
+      ["!rows"][2] = { hpt: 18 };
+      ["!rows"][3] = { hpt: 18 };
+      
+      return ws;
     }
     
     function buildCompletedSummaryHTML(item) {
@@ -797,9 +884,9 @@
         new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" })
           .format(Number.isFinite(+n) ? +n : 0);
 
-      // prepare rows (sorted DESC by year)
+      // prepare rows (sorted ASC by year)
       const rows = (Array.isArray(item.hoursHistory) ? [...item.hoursHistory] : [])
-        .sort((a, b) => parseInt(b.year) - parseInt(a.year));
+        .sort((a, b) => (parseInt(a.year)||0) - (parseInt(b.year)||0));
 
       const safe = {
         proj: escapeHTML(item.projectNumber || ""),
@@ -820,12 +907,16 @@
         const act  = escapeHTML(h.actual || "");
         const bidPrice = Number(h.bidPrice) || 0;
         const actualPrice = (Number(h.actual) || 0) * HOURLY_RATE;
-        const pct = (() => {
-          const b = parseFloat(h.bid), a = parseFloat(h.actual);
-          if (!isFinite(b) || !isFinite(a) || b === 0) return "N/A";
+        
+        const b = parseFloat(h.bid), a = parseFloat(h.actual);
+        let pct = "N/A";
+        let pctClass = "";
+        if (isFinite(b) && isFinite(a) && b !== 0) {
           const diff = ((a - b) / b) * 100;
-          return `${diff > 0 ? "+" : ""}${diff.toFixed(1)}%`;
-        })();
+          pct = `${diff > 0 ? "+" : ""}${diff.toFixed(1)}%`;
+          pctClass = diff > 0 ? "text-loss" : "text-gain";
+        }
+        
         const gainLoss = bidPrice - actualPrice;
         const glClass = gainLoss >= 0 ? "text-gain" : "text-loss";
 
@@ -834,7 +925,7 @@
             <td data-col="year">${year}</td>
             <td data-col="bid">${bid}</td>
             <td data-col="actual">${act}</td>
-            <td data-col="pct">${pct}</td>
+            <td data-col="pct" class="${pctClass}">${pct}</td>
             <td data-col="bidPrice">${fmtMoney(bidPrice)}</td>
             <td data-col="actualPrice">${fmtMoney(actualPrice)}</td>
             <td data-col="gainLoss" class="${glClass}">${fmtMoney(gainLoss)}</td>
@@ -987,8 +1078,11 @@
             if (Number.isFinite(bid) && Number.isFinite(actual) && bid !== 0) {
               const diff = ((actual - bid) / bid) * 100;
               pctCell.textContent = (diff > 0 ? "+" : "") + diff.toFixed(1) + "%";
+              pctCell.classList.toggle("text-loss", diff > 0);
+              pctCell.classList.toggle("text-gain", diff <= 0);
             } else {
               pctCell.textContent = "N/A";
+              pctCell.classList.remove("text-loss","text-gain");
             }
             actualPriceCell.textContent = fmtMoney(ap);
 
@@ -1015,10 +1109,9 @@
             const empty = el('#histTable tbody tr[data-empty="1"]');
             if (empty) empty.remove();
 
-            const y = maxYear() + 1; // suggest NEXT year by default
             const tr = document.createElement("tr");
             tr.innerHTML = \`
-              <td data-col="year" contenteditable="true">\${y}</td>
+              <td data-col="year" contenteditable="true"></td>
               <td data-col="bid" contenteditable="true"></td>
               <td data-col="actual" contenteditable="true"></td>
               <td data-col="pct">N/A</td>
@@ -1026,7 +1119,7 @@
               <td data-col="actualPrice">\${fmtMoney(0)}</td>
               <td data-col="gainLoss" class="text-gain">\${fmtMoney(0)}</td>
               <td class="tools"><button data-action="deleteRow" title="Delete row">✕</button></td>\`;
-            tbl.prepend(tr);
+            tbl.append(tr); // add at bottom
             recalcRow(tr);
           }
 
@@ -1171,44 +1264,26 @@
         const historyBody = document.getElementById('hourHistoryBody');
         historyBody.innerHTML = '';
         if (item.hoursHistory && item.hoursHistory.length > 0) {
-            [...item.hoursHistory].sort((a,b) => b.year - a.year).forEach(h => addHourHistoryRow(h.year, h.bid, h.actual, h.bidPrice));
+            [...item.hoursHistory]
+              .sort((a,b) => (parseInt(a.year)||0) - (parseInt(b.year)||0))
+              .forEach(h => addHourHistoryRow(h.year, h.bid, h.actual, h.bidPrice));
         } else {
             addHourHistoryRow();
         }
     }
 
     function addHourHistoryRow(year = '', bid = '', actual = '', bidPrice = '') {
-        const tbody = document.getElementById('hourHistoryBody');
-        let nextYear = year;
+      const tbody = document.getElementById('hourHistoryBody');
 
-        // FIX #2: Correctly calculate the next year when adding a new row.
-        if (year === '') {
-            const rows = tbody.querySelectorAll('tr');
-            if (rows.length > 0) {
-                // Get the year from the top-most row (most recent year)
-                const lastYearInput = rows[0].querySelector('.history-year');
-                const lastYear = parseInt(lastYearInput.value, 10);
-                if (!isNaN(lastYear)) {
-                    // Decrement from the last year
-                    nextYear = lastYear - 1;
-                } else {
-                    // Fallback if the input is empty or invalid
-                    nextYear = new Date().getFullYear(); 
-                }
-            } else {
-                // If no rows exist, default to the current year
-                nextYear = new Date().getFullYear(); 
-            }
-        }
-        
-        const row = tbody.insertRow(0); // Insert at the top
-        row.innerHTML = `
-            <td><input type="number" class="history-year" placeholder="YYYY" value="${nextYear}" required></td>
-            <td><input type="number" step="0.1" class="history-bid" placeholder="e.g. 40" value="${bid}" required></td>
-            <td><input type="number" step="0.1" class="history-actual" placeholder="e.g. 42.5" value="${actual}" required></td>
-            <td><input type="number" step="0.01" class="history-bid-price" placeholder="e.g. 1200.00" value="${bidPrice}"></td>
-            <td class="no-pdf"><button type="button" class="btn-danger" style="padding:4px 8px;" onclick="this.closest('tr').remove()">X</button></td>
-        `;
+      // No automatic year suggestions; leave blank unless provided.
+      const row = tbody.insertRow(-1); // append at bottom
+      row.innerHTML = `
+          <td><input type="number" class="history-year" placeholder="YYYY" value="${year}" required></td>
+          <td><input type="number" step="0.1" class="history-bid" placeholder="e.g. 40" value="${bid}" required></td>
+          <td><input type="number" step="0.1" class="history-actual" placeholder="e.g. 42.5" value="${actual}" required></td>
+          <td><input type="number" step="0.01" class="history-bid-price" placeholder="e.g. 1200.00" value="${bidPrice}"></td>
+          <td class="no-pdf"><button type="button" class="btn-danger" style="padding:4px 8px;" onclick="this.closest('tr').remove()">X</button></td>
+      `;
     }
 
     /* ======================
